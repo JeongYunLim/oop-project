@@ -1,7 +1,7 @@
 package ui;
 
 import manager.ItemManager;
-import model.Item;
+import domain.Item;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -23,6 +23,8 @@ public class ItemListPanel extends JPanel {
     private JTextField searchField;
     private JButton searchButton;
     private JComboBox<String> categoryCombo;
+    private JComboBox<String> buildingCombo;
+    private JCheckBox availableCheckBox;
     private JButton sortByPriceButton;
     private JButton sortByLatestButton;
 
@@ -65,32 +67,51 @@ public class ItemListPanel extends JPanel {
         add(buildTablePanel(), BorderLayout.CENTER);
     }
 
-    /** 상단: 검색창, 카테고리 콤보박스, 정렬 버튼 */
+    /** 상단: 1행(검색+카테고리) + 2행(건물+대여가능+정렬) */
     private JPanel buildTopPanel() {
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 5));
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
 
+        // 1행: 검색 + 카테고리
+        JPanel searchRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         searchField = new JTextField(15);
         searchButton = new JButton("검색");
-
-        // 카테고리 목록 — Item.category 에서 사용하는 값과 일치시킬 것
         String[] categories = {"전체", "전자기기", "도서", "생활용품", "의류", "스포츠"};
         categoryCombo = new JComboBox<>(categories);
+        searchRow.add(new JLabel("검색:"));
+        searchRow.add(searchField);
+        searchRow.add(searchButton);
+        searchRow.add(new JLabel("카테고리:"));
+        searchRow.add(categoryCombo);
 
+        // 2행: 건물+대여가능(왼쪽) / 정렬버튼(오른쪽)
+        JPanel filterRow = new JPanel(new BorderLayout());
+        JPanel filterBuilding = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        String[] buildings = {"전체", "새빛관", "비마관", "한울관", "누리관", "옥의관", "기념관", "참빛관", "연구관"};
+        buildingCombo = new JComboBox<>(buildings);
+        availableCheckBox = new JCheckBox("대여가능만");
+        filterBuilding.add(new JLabel("건물:"));
+        filterBuilding.add(buildingCombo);
+        filterBuilding.add(availableCheckBox);
+
+        JPanel filterAvailable = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
         sortByPriceButton  = new JButton("가격순");
         sortByLatestButton = new JButton("최신순");
+        filterAvailable.add(sortByPriceButton);
+        filterAvailable.add(sortByLatestButton);
 
-        top.add(new JLabel("검색:"));
-        top.add(searchField);
-        top.add(searchButton);
-        top.add(new JLabel("카테고리:"));
-        top.add(categoryCombo);
-        top.add(sortByPriceButton);
-        top.add(sortByLatestButton);
+        filterRow.add(filterBuilding,  BorderLayout.WEST);
+        filterRow.add(filterAvailable, BorderLayout.EAST);
+
+        top.add(searchRow);
+        top.add(filterRow);
 
         // 이벤트 연결
         searchButton.addActionListener(e -> onSearch());
-        searchField.addActionListener(e -> onSearch());   // Enter 키 검색
-        categoryCombo.addActionListener(e -> onCategoryFilter());
+        searchField.addActionListener(e -> onSearch());
+        categoryCombo.addActionListener(e -> applyFilters());
+        buildingCombo.addActionListener(e -> applyFilters());
+        availableCheckBox.addActionListener(e -> applyFilters());
         sortByPriceButton.addActionListener(e -> displayItems(itemManager.sortByPrice()));
         sortByLatestButton.addActionListener(e -> displayItems(itemManager.sortByLatest()));
 
@@ -137,15 +158,19 @@ public class ItemListPanel extends JPanel {
         }
     }
 
-    /** 카테고리 콤보박스 변경 처리 */
-    private void onCategoryFilter() {
-        String selected = (String) categoryCombo.getSelectedItem();
-        if ("전체".equals(selected)) {
-            loadAllItems();
-        } else {
-            displayItems(itemManager.filterByCategory(selected));
-        }
+    /** 카테고리 + 건물 + 대여가능 조합 필터 */
+    private void applyFilters() {
+        String category = (String) categoryCombo.getSelectedItem();
+        String building  = (String) buildingCombo.getSelectedItem();
+
+        ArrayList<Item> result = itemManager.getItems();
+        if (!"전체".equals(category)) result = itemManager.filterByCategory(category);
+        if (!"전체".equals(building))  result.retainAll(itemManager.filterByBuilding(building));
+        if (availableCheckBox.isSelected()) result.removeIf(item -> !item.isAvailable());
+
+        displayItems(result);
     }
+
 
     /** 행 선택 시 상세 패널에 Item 전달 */
     private void onItemSelected() {

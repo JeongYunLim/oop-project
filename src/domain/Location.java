@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 package domain;
-=======
-package model;
->>>>>>> 4f6729d27242a43a5b2e913d3bdb85af148ce4e5
 
 /**
  * 캠퍼스 내 물품 위치를 나타내는 도메인 클래스

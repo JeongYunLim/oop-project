@@ -13,16 +13,7 @@ import java.util.Comparator;
 public class ItemManager {
 
 
-    private static ItemManager instance;
-
-    public static ItemManager getInstance() {
-        if (instance == null) {
-            instance = new ItemManager();
-        }
-        return instance;
-    }
-
-    private ItemManager() {}
+    public ItemManager() {}
 
 
     // ── 데이터 저장소 ─────────────────────────────────

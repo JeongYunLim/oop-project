@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 package domain;
-=======
-package model;
->>>>>>> 4f6729d27242a43a5b2e913d3bdb85af148ce4e5
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
