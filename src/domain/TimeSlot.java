@@ -80,21 +80,6 @@ public class TimeSlot {
     public LocalDateTime getStartTime() { return startTime; }
     public LocalDateTime getEndTime()   { return endTime; }
 
-    /** @throws IllegalArgumentException 변경 후에도 endTime이 startTime보다 늦어야 함 */
-    public void setStartTime(LocalDateTime startTime) {
-        if (!endTime.isAfter(startTime)) {
-            throw new IllegalArgumentException("종료 시각은 시작 시각보다 늦어야 합니다.");
-        }
-        this.startTime = startTime;
-    }
-
-    /** @throws IllegalArgumentException 변경 후에도 endTime이 startTime보다 늦어야 함 */
-    public void setEndTime(LocalDateTime endTime) {
-        if (!endTime.isAfter(startTime)) {
-            throw new IllegalArgumentException("종료 시각은 시작 시각보다 늦어야 합니다.");
-        }
-        this.endTime = endTime;
-    }
 
 
     // ════════════════════════════════════════════════
