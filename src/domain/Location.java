@@ -58,9 +58,6 @@ public class Location {
     public String getDetail()      { return detail; }
     public String getDescription() { return description; }
 
-    public void setBuilding(String building)       { this.building = building; }
-    public void setDetail(String detail)           { this.detail = detail; }
-    public void setDescription(String description) { this.description = description; }
 
 
     // ════════════════════════════════════════════════
