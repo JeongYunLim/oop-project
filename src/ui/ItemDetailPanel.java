@@ -74,7 +74,7 @@ public class ItemDetailPanel extends JPanel {
         nameLabel.setText(item.getName());
         categoryLabel.setText(item.getCategory());
         priceLabel.setText(item.getPricePerHour() + " 원");
-        stateLabel.setText(item.getState());
+        stateLabel.setText(item.getState().getStateName());
         ownerLabel.setText(item.getOwnerId());
         locationLabel.setText(item.getLocation() != null ? item.getLocation().toString() : "-");
         descriptionArea.setText(item.getDescription());

@@ -2,14 +2,14 @@
 package domain;
 
 import java.time.LocalDateTime;
+import state.ItemState;
+import state.AvailableState;
 
 /**
  * 공유 물품을 나타내는 도메인 클래스
  *
- * 
+ *
  * - 물품의 기본 정보를 캡슐화
- * - 상태(state)는 3번 팀원의 ItemState로 추후 교체 예정
- *   → 지금은 String으로 임시 사용 ("available" / "reserved" / "rented")
  * - owner는 1번 팀원의 User 클래스 연동 후 타입 교체 예정
  *   → 지금은 String(userId)으로 임시 사용
  */
@@ -29,8 +29,7 @@ public class Item {
     private TimeSlot timeSlot;        // 대여 가능 시간대 (TimeSlot 객체)
 
     // ── 상태 ─────────────────────────────────────────
-    // TODO: 3번 팀원 ItemState 완성 후 → private ItemState state; 로 교체
-    private String state;             // 현재 상태: "available" / "reserved" / "rented"
+    private ItemState state;
 
     // ── 소유자 ───────────────────────────────────────
     // TODO: 1번 팀원 User 클래스 연동 후 → private User owner; 로 교체
@@ -46,7 +45,7 @@ public class Item {
 
     /**
      * 기본 생성자 — 필수 정보만 받아 물품 생성
-     * 등록 시 state는 자동으로 "available"
+     * 등록 시 state는 자동으로 AvailableState
      */
     public Item(String name, String category,
                 int pricePerHour, Location location, TimeSlot timeSlot,
@@ -58,7 +57,7 @@ public class Item {
         this.location     = location;
         this.timeSlot     = timeSlot;
         this.ownerId      = ownerId;
-        this.state        = "available";       // 등록 즉시 대여 가능 상태
+        this.state        = new AvailableState();
         this.registeredAt = LocalDateTime.now();
     }
 
@@ -74,7 +73,7 @@ public class Item {
     public int getPricePerHour()        { return pricePerHour; }
     public Location getLocation()       { return location; }
     public TimeSlot getTimeSlot()       { return timeSlot; }
-    public String getState()            { return state; }
+    public ItemState getState()         { return state; }
     public String getOwnerId()          { return ownerId; }
     public LocalDateTime getRegisteredAt() { return registeredAt; }
 
@@ -92,32 +91,22 @@ public class Item {
     public void setLocation(Location location)     { this.location = location; }
     public void setTimeSlot(TimeSlot timeSlot)     { this.timeSlot = timeSlot; }
 
-    /**
-     * 상태 변경 메서드
-     * - 현재: String으로 직접 관리
-     * - TODO: 3번 팀원 ItemState 연동 후 아래처럼 교체
-     *   public void setState(ItemState state) { this.state = state; }
-     */
-    public void setState(String state) {
-        this.state = state;
-    }
+    public void setState(ItemState state) { this.state = state; }
 
-    /** 상태 편의 메서드 — 3번 팀원과 협의 후 사용 */
-    public boolean isAvailable() { return "available".equals(this.state); }
-    public boolean isReserved()  { return "reserved".equals(this.state); }
-    public boolean isRented()    { return "rented".equals(this.state); }
+    public boolean isAvailable() { return "대여 가능".equals(state.getStateName()); }
+    public boolean isReserved()  { return "예약됨".equals(state.getStateName()); }
+    public boolean isRented()    { return "대여 중".equals(state.getStateName()); }
 
 
     // ════════════════════════════════════════════════
     //  toString — 디버깅/목록 출력용
     // ════════════════════════════════════════════════
 
-    
+
     public String toString() {
         return String.format(
             "[%d] %s | %s | %d원/시간 | 상태: %s",
-            itemId, name, category, pricePerHour, state
+            itemId, name, category, pricePerHour, state.getStateName()
         );
     }
 }
-
