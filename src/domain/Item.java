@@ -1,29 +1,23 @@
+﻿ 
 package domain;
 
 import java.time.LocalDateTime;
-
 import state.ItemState;
 
 public class Item {
 
     private int itemId;
-
     private String name;
     private String category;
     private String description;
-
     private int pricePerHour;
     private Location location;
     private TimeSlot timeSlot;
-
     private String state;
-
     private String ownerId;
     private LocalDateTime registeredAt;
 
-    public Item(String name, String category,
-                int pricePerHour, Location location, TimeSlot timeSlot,
-                String ownerId) {
+    public Item(String name, String category, int pricePerHour, Location location, TimeSlot timeSlot, String ownerId) {
         this.name = name;
         this.category = category;
         this.description = "";
@@ -134,32 +128,32 @@ public class Item {
     }
 
     public boolean isAvailable() {
-        return "available".equals(this.state);
+        return "available".equals(state);
     }
 
     public boolean isReserved() {
-        return "reserved".equals(this.state);
+        return "reserved".equals(state);
     }
 
     public boolean isRented() {
-        return "rented".equals(this.state);
+        return "rented".equals(state);
     }
 
     public void requestRental() {
         if (isAvailable()) {
-            this.state = "reserved";
+            state = "reserved";
         }
     }
 
     public void startRental() {
         if (isReserved()) {
-            this.state = "rented";
+            state = "rented";
         }
     }
 
     public void returnItem() {
         if (isRented()) {
-            this.state = "available";
+            state = "available";
         }
     }
 
