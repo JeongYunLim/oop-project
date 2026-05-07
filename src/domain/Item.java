@@ -16,8 +16,6 @@ public class Item {
     private Location location;
     private TimeSlot timeSlot;
 
-    // 팀원 코드 기준: 문자열 상태 관리
-    // available / reserved / rented
     private String state;
 
     private String ownerId;
@@ -37,7 +35,6 @@ public class Item {
         this.registeredAt = LocalDateTime.now();
     }
 
-    // 기존 테스트 코드와의 호환용 생성자
     public Item(String name, String category, String locationText, int price) {
         this.name = name;
         this.category = category;
@@ -70,7 +67,6 @@ public class Item {
         return pricePerHour;
     }
 
-    // 기존 코드와의 호환용
     public int getPrice() {
         return pricePerHour;
     }
@@ -119,12 +115,10 @@ public class Item {
         this.timeSlot = timeSlot;
     }
 
-    // 팀원 코드 기준: 문자열 상태 변경
     public void setState(String state) {
         this.state = state;
     }
 
-    // 기존 State Pattern 코드와의 호환용
     public void setState(ItemState itemState) {
         if (itemState == null) return;
 
@@ -151,7 +145,6 @@ public class Item {
         return "rented".equals(this.state);
     }
 
-    // 거래 상태 전이용 메서드
     public void requestRental() {
         if (isAvailable()) {
             this.state = "reserved";
@@ -170,7 +163,6 @@ public class Item {
         }
     }
 
-    // UI 표시용
     public String getStateName() {
         if ("available".equals(state)) {
             return "대여 가능";
