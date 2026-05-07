@@ -11,7 +11,7 @@ public class ReservedState implements ItemState {
 
     @Override
     public void startRental(Item item) {
-        item.setState(new RentedState());
+        item.setState("rented");
     }
 
     @Override

@@ -16,7 +16,7 @@ public class RentedState implements ItemState {
 
     @Override
     public void returnItem(Item item) {
-        item.setState(new AvailableState());
+        item.setState("available");
     }
 
     @Override

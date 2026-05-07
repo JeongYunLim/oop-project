@@ -6,7 +6,7 @@ public class NoReturnPenalty implements PenaltyPolicy {
 
     @Override
     public void apply(User user) {
-        user.getTemperature().decrease(3.0);
+        user.getTemperature().tempDecrease(3.0);
     }
 
     @Override

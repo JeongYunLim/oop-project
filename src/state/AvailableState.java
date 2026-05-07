@@ -6,7 +6,7 @@ public class AvailableState implements ItemState {
 
     @Override
     public void requestRental(Item item) {
-        item.setState(new ReservedState());
+        item.setState("reserved");
     }
 
     @Override

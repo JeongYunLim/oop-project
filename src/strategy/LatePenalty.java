@@ -6,7 +6,7 @@ public class LatePenalty implements PenaltyPolicy {
 
     @Override
     public void apply(User user) {
-        user.getTemperature().decrease(0.5);
+        user.getTemperature().tempDecrease(0.5);
     }
 
     @Override

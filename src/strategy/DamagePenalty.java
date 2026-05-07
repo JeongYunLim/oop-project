@@ -6,7 +6,7 @@ public class DamagePenalty implements PenaltyPolicy {
 
     @Override
     public void apply(User user) {
-        user.getTemperature().decrease(1.5);
+        user.getTemperature().tempDecrease(1.5);
     }
 
     @Override
