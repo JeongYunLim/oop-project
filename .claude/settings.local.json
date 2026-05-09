@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(Remove-Item -Path \"c:\\\\Users\\\\정시은\\\\oop-project\\\\src\\\\Main.java\" -Force)"
-    ]
-  }
-}
