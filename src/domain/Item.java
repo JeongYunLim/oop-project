@@ -8,10 +8,8 @@ import java.time.LocalDateTime;
  *
  * 
  * - 물품의 기본 정보를 캡슐화
- * - 상태(state)는 3번 팀원의 ItemState로 추후 교체 예정
- *   → 지금은 String으로 임시 사용 ("available" / "reserved" / "rented")
- * - owner는 1번 팀원의 User 클래스 연동 후 타입 교체 예정
- *   → 지금은 String(userId)으로 임시 사용
+
+  
  */
 public class Item {
 
@@ -29,7 +27,7 @@ public class Item {
     private TimeSlot timeSlot;        // 대여 가능 시간대 (TimeSlot 객체)
 
     // ── 상태 ─────────────────────────────────────────
-    // TODO: 3번 팀원 ItemState 완성 후 → private ItemState state; 로 교체
+   
     private ItemState state;             // 현재 상태: "available" / "reserved" / "rented"
 
     // ── 소유자 ───────────────────────────────────────
