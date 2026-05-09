@@ -6,7 +6,7 @@ package domain;
  * 
  * - 건물명 + 세부 장소로 위치를 표현
  * - 같은 건물 여부 비교 메서드를 위치 기반 필터링에 사용
- * - GPS 좌표 확장 여지: latitude, longitude 필드 추가 예정 (지도 연동 시)
+
  */
 public class Location {
 
@@ -15,10 +15,7 @@ public class Location {
     private String detail;      // 세부 장소 (예: "3층 312호", "1층 로비")
     private String description; // 추가 설명 (예: "엘리베이터 옆", "정문에서 도보 3분")
 
-    // TODO: GPS 좌표 확장 시 아래 필드 추가
-    // private double latitude;
-    // private double longitude;
-
+   
 
     // ════════════════════════════════════════════════
     //  생성자
