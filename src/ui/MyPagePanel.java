@@ -69,5 +69,11 @@ public class MyPagePanel extends JPanel {
         }
     }
 
-    public void updateUI() { refresh(); }
+    @Override
+public void updateUI() {
+    super.updateUI();
+    if (nameLabel != null && tableModel != null) {
+        refresh();
+    }
+}
 }
