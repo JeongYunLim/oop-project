@@ -2,6 +2,8 @@ package transaction;
 
 import domain.Item;
 import domain.User;
+import manager.RentalManager;
+import manager.ReportManager;
 import strategy.PenaltyPolicy;
 
 public class Rental extends Transaction {
@@ -14,14 +16,15 @@ public class Rental extends Transaction {
     public void request() {
         item.requestRental();
         status = RentalStatus.REQUESTED;
+        RentalManager.getInstance().addRental(this);
     }
 
     @Override
     public void approve() {
-        if (!item.getStateName().equals("예약됨")) {
-            item.requestRental();
+        if (status != RentalStatus.REQUESTED) {
+            System.out.println("대여 요청 상태에서만 승인 가능합니다.");
+            return;
         }
-
         status = RentalStatus.APPROVED;
     }
 
@@ -35,7 +38,6 @@ public class Rental extends Transaction {
     public void completeReturn() {
         item.returnItem();
         status = RentalStatus.COMPLETED;
-
         borrower.getTemperature().increase(0.3);
         owner.getTemperature().increase(0.2);
     }
@@ -43,5 +45,6 @@ public class Rental extends Transaction {
     public void reportProblem(PenaltyPolicy policy) {
         policy.apply(borrower);
         status = RentalStatus.REPORTED;
+        ReportManager.getInstance().addReport(this);
     }
 }

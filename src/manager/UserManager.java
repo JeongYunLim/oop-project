@@ -44,6 +44,14 @@ public class UserManager {
     // 로그아웃: 로그인된 사용자 정보 초기화
     public void logout() { loggedInUser = null; }
     
-    // 로그인된 사용자 정보 반환 
     public User getLoggedInUser() { return loggedInUser; }
+
+    public ArrayList<User> getAllUsers() { return new ArrayList<>(users); }
+
+    public User getUserById(String id) {
+        for (User u : users) {
+            if (u.getId().equals(id)) return u;
+        }
+        return null;
+    }
 }

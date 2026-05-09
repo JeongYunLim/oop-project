@@ -1,6 +1,7 @@
 package ui;
 
 import manager.ItemManager;
+import manager.NavigationManager;
 import domain.Item;
 
 import javax.swing.*;
@@ -172,7 +173,6 @@ public class ItemListPanel extends JPanel {
     }
 
 
-    /** 행 선택 시 상세 패널에 Item 전달 */
     private void onItemSelected() {
         int row = itemTable.getSelectedRow();
         if (row < 0 || row >= currentItems.size()) return;
@@ -183,8 +183,7 @@ public class ItemListPanel extends JPanel {
             detailPanel.loadItem(selected);
         }
 
-        // TODO: NavigationManager 연동 후 화면 전환 처리
-        // NavigationManager.getInstance().showPanel("detail");
+        NavigationManager.getInstance().showPanel("ITEM_DETAIL");
     }
 
 

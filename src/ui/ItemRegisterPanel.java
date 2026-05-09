@@ -3,7 +3,10 @@ package ui;
 import domain.Item;
 import domain.Location;
 import domain.TimeSlot;
+import domain.User;
 import manager.ItemManager;
+import manager.NavigationManager;
+import manager.UserManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,10 +14,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-/**
- * 물품 등록 화면 — 폼 입력 후 ItemManager에 Item 추가
- * ItemListPanel과 동일하게 ItemManager를 생성자 주입으로 받음
- */
 public class ItemRegisterPanel extends JPanel {
 
     private static final DateTimeFormatter FMT =
@@ -25,7 +24,6 @@ public class ItemRegisterPanel extends JPanel {
 
     private final ItemManager itemManager;
 
-    // ── 폼 필드 ───────────────────────────────────────
     private JTextField    nameField;
     private JComboBox<String> categoryCombo;
     private JTextArea     descriptionArea;
@@ -35,20 +33,10 @@ public class ItemRegisterPanel extends JPanel {
     private JTextField    startTimeField;
     private JTextField    endTimeField;
 
-
-    // ════════════════════════════════════════════════
-    //  생성자
-    // ════════════════════════════════════════════════
-
     public ItemRegisterPanel(ItemManager itemManager) {
         this.itemManager = itemManager;
         initComponents();
     }
-
-
-    // ════════════════════════════════════════════════
-    //  UI 초기화
-    // ════════════════════════════════════════════════
 
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
@@ -74,11 +62,11 @@ public class ItemRegisterPanel extends JPanel {
         endTimeField    = new JTextField("yyyy-MM-dd HH:mm", 16);
 
         addRow(form, gbc, 0, "물품명 *",                      nameField);
-        addRow(form, gbc, 1, "카테고리 *",                     categoryCombo);
-        addRow(form, gbc, 2, "설명",                           new JScrollPane(descriptionArea));
-        addRow(form, gbc, 3, "시간당 가격(원) *",              priceField);
-        addRow(form, gbc, 4, "건물명 *",                       buildingField);
-        addRow(form, gbc, 5, "세부 위치",                      detailField);
+        addRow(form, gbc, 1, "카테고리 *",                    categoryCombo);
+        addRow(form, gbc, 2, "설명",                          new JScrollPane(descriptionArea));
+        addRow(form, gbc, 3, "시간당 가격(원) *",             priceField);
+        addRow(form, gbc, 4, "건물명 *",                      buildingField);
+        addRow(form, gbc, 5, "세부 위치",                     detailField);
         addRow(form, gbc, 6, "대여 시작 (yyyy-MM-dd HH:mm) *", startTimeField);
         addRow(form, gbc, 7, "대여 종료 (yyyy-MM-dd HH:mm) *", endTimeField);
 
@@ -106,20 +94,13 @@ public class ItemRegisterPanel extends JPanel {
         return panel;
     }
 
-
-    // ════════════════════════════════════════════════
-    //  이벤트 핸들러
-    // ════════════════════════════════════════════════
-
     private void onRegister() {
-        // 1. 물품명
         String name = nameField.getText().trim();
         if (name.isEmpty()) {
             showError("물품명을 입력하세요.");
             return;
         }
 
-        // 2. 가격
         int price;
         try {
             price = Integer.parseInt(priceField.getText().trim());
@@ -129,14 +110,12 @@ public class ItemRegisterPanel extends JPanel {
             return;
         }
 
-        // 3. 건물명
         String building = buildingField.getText().trim();
         if (building.isEmpty()) {
             showError("건물명을 입력하세요.");
             return;
         }
 
-        // 4. 시각 파싱
         LocalDateTime startTime, endTime;
         try {
             startTime = LocalDateTime.parse(startTimeField.getText().trim(), FMT);
@@ -146,7 +125,6 @@ public class ItemRegisterPanel extends JPanel {
             return;
         }
 
-        // 5. TimeSlot 생성 (종료 < 시작이면 예외)
         TimeSlot timeSlot;
         try {
             timeSlot = new TimeSlot(startTime, endTime);
@@ -155,35 +133,29 @@ public class ItemRegisterPanel extends JPanel {
             return;
         }
 
-        // 6. Item 생성 및 등록
+        User loggedIn = UserManager.getInstance().getLoggedInUser();
+        if (loggedIn == null) {
+            showError("로그인이 필요합니다.");
+            return;
+        }
+
         String category    = (String) categoryCombo.getSelectedItem();
         String detail      = detailField.getText().trim();
         String description = descriptionArea.getText().trim();
         Location location  = new Location(building, detail);
 
-        // TODO: 1번 팀원 로그인 연동 후 실제 userId로 교체
-        String ownerId = "guest";
-
-        Item item = new Item(name, category, price, location, timeSlot, ownerId);
+        Item item = new Item(name, category, price, location, timeSlot, loggedIn);
         item.setDescription(description);
         itemManager.addItem(item);
 
         JOptionPane.showMessageDialog(this, "물품이 등록되었습니다.");
         clearForm();
-
-        // TODO: NavigationManager 연동 후 화면 전환 처리
-        // NavigationManager.getInstance().showPanel("list");
+        NavigationManager.getInstance().showPanel("ITEM_LIST");
     }
 
     private void onCancel() {
-        // TODO: NavigationManager 연동 후 화면 전환 처리
-        // NavigationManager.getInstance().showPanel("list");
+        NavigationManager.getInstance().showPanel("ITEM_LIST");
     }
-
-
-    // ════════════════════════════════════════════════
-    //  유틸
-    // ════════════════════════════════════════════════
 
     private void clearForm() {
         nameField.setText("");

@@ -20,8 +20,9 @@ public class Temperature {
     }
 
     
-    //온도 반환 메서드
-    public double getDegree() {
-        return degree;
-    }
+    public double getDegree() { return degree; }
+
+    public void increase(double amount) { tempIncrease(amount); }
+    public void decrease(double amount) { tempDecrease(amount); }
+    public double getValue()            { return getDegree(); }
 }
