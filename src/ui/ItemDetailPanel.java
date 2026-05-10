@@ -2,7 +2,6 @@ package ui;
 
 import domain.Item;
 import domain.User;
-import domain.Wishlist;
 import manager.NavigationManager;
 import manager.UserManager;
 import transaction.Rental;
@@ -21,7 +20,6 @@ public class ItemDetailPanel extends JPanel {
     private JLabel ownerLabel;
     private JLabel locationLabel;
     private JTextArea descriptionArea;
-    private JButton wishBtn;
 
     public ItemDetailPanel() {
         initComponents();
@@ -58,18 +56,15 @@ public class ItemDetailPanel extends JPanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton rentalBtn  = new JButton("대여 요청");
-        wishBtn            = new JButton("찜하기");
         JButton inquiryBtn = new JButton("문의하기");
         JButton backBtn    = new JButton("뒤로가기");
 
         rentalBtn.addActionListener(e -> onRentalRequest());
-        wishBtn.addActionListener(e -> onToggleWish());
         inquiryBtn.addActionListener(e -> onInquiry());
         backBtn.addActionListener(e ->
             NavigationManager.getInstance().showPanel("ITEM_LIST"));
 
         buttonPanel.add(rentalBtn);
-        buttonPanel.add(wishBtn);
         buttonPanel.add(inquiryBtn);
         buttonPanel.add(backBtn);
 
@@ -96,20 +91,22 @@ public class ItemDetailPanel extends JPanel {
         ownerLabel.setText(item.getOwnerId());
         locationLabel.setText(item.getLocation() != null ? item.getLocation().toString() : "-");
         descriptionArea.setText(item.getDescription());
-        updateWishButton();
     }
 
     private void clearFields() {
         idLabel.setText("-"); nameLabel.setText("-"); categoryLabel.setText("-");
         priceLabel.setText("-"); stateLabel.setText("-"); ownerLabel.setText("-");
         locationLabel.setText("-"); descriptionArea.setText("");
-        wishBtn.setText("찜하기");
     }
 
     private void onRentalRequest() {
         User loggedIn = UserManager.getInstance().getLoggedInUser();
         if (loggedIn == null) {
             JOptionPane.showMessageDialog(this, "로그인이 필요합니다.");
+            return;
+        }
+        if (loggedIn.getId().equals(currentItem.getOwnerId())) {
+            JOptionPane.showMessageDialog(this, "본인 물품은 대여할 수 없습니다.");
             return;
         }
         if (currentItem == null || !currentItem.isAvailable()) {
@@ -126,27 +123,6 @@ public class ItemDetailPanel extends JPanel {
         Window w = SwingUtilities.getWindowAncestor(this);
         if (w instanceof MainFrame) {
             ((MainFrame) w).showTransactionPanel(rental);
-        }
-    }
-
-    private void onToggleWish() {
-        User loggedIn = UserManager.getInstance().getLoggedInUser();
-        if (loggedIn == null) {
-            JOptionPane.showMessageDialog(this, "로그인이 필요합니다.");
-            return;
-        }
-        if (currentItem == null) return;
-        Wishlist.getInstance().toggle(loggedIn, currentItem);
-        updateWishButton();
-    }
-
-    private void updateWishButton() {
-        User loggedIn = UserManager.getInstance().getLoggedInUser();
-        if (loggedIn != null && currentItem != null) {
-            boolean wished = Wishlist.getInstance().isWished(loggedIn, currentItem);
-            wishBtn.setText(wished ? "찜 해제" : "찜하기");
-        } else {
-            wishBtn.setText("찜하기");
         }
     }
 

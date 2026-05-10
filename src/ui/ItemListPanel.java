@@ -68,7 +68,7 @@ public class ItemListPanel extends JPanel {
         add(buildTablePanel(), BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton backBtn = new JButton("뒤로가기");
+        JButton backBtn = new JButton("메인으로");
         backBtn.addActionListener(e -> NavigationManager.getInstance().showPanel("MAIN"));
         bottomPanel.add(backBtn);
         add(bottomPanel, BorderLayout.SOUTH);

@@ -1,7 +1,10 @@
 package ui;
 
+import domain.User;
 import manager.NavigationManager;
+import manager.UserManager;
 import transaction.Rental;
+import transaction.RentalStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +24,10 @@ public class TransactionPanel extends JPanel {
     public TransactionPanel(Rental rental) {
         this.rental = rental;
 
+        User loggedInUser = UserManager.getInstance().getLoggedInUser();
+        boolean isOwner = loggedInUser != null
+                && loggedInUser.getId().equals(rental.getOwner().getId());
+
         setLayout(new BorderLayout());
         setBackground(new Color(245, 246, 248));
 
@@ -33,12 +40,12 @@ public class TransactionPanel extends JPanel {
         infoPanel.setBackground(Color.WHITE);
         infoPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
 
-        itemNameLabel = new JLabel();
-        ownerLabel = new JLabel();
-        borrowerLabel = new JLabel();
-        itemStateLabel = new JLabel();
+        itemNameLabel    = new JLabel();
+        ownerLabel       = new JLabel();
+        borrowerLabel    = new JLabel();
+        itemStateLabel   = new JLabel();
         rentalStatusLabel = new JLabel();
-        ownerTempLabel = new JLabel();
+        ownerTempLabel   = new JLabel();
         borrowerTempLabel = new JLabel();
 
         itemNameLabel.setFont(new Font("맑은 고딕", Font.BOLD, 18));
@@ -61,9 +68,10 @@ public class TransactionPanel extends JPanel {
         buttonPanel.setBackground(new Color(245, 246, 248));
 
         JButton approveButton = new JButton("예약 승인");
-        JButton startButton = new JButton("대여 시작");
-        JButton returnButton = new JButton("반납 확인");
-        JButton reportButton = new JButton("문제 신고");
+        JButton startButton   = new JButton("대여 시작");
+        JButton returnButton  = new JButton("반납 확인");
+        JButton reportButton  = new JButton("문제 신고");
+        JButton mainButton    = new JButton("메인으로");
 
         approveButton.addActionListener(e -> {
             rental.approve();
@@ -72,6 +80,10 @@ public class TransactionPanel extends JPanel {
         });
 
         startButton.addActionListener(e -> {
+            if (rental.getStatus() != RentalStatus.APPROVED) {
+                JOptionPane.showMessageDialog(this, "소유자의 승인 후에 대여를 시작할 수 있습니다.");
+                return;
+            }
             rental.start();
             updateLabels();
             JOptionPane.showMessageDialog(this, "대여가 시작되었습니다.");
@@ -85,26 +97,28 @@ public class TransactionPanel extends JPanel {
 
         reportButton.addActionListener(e -> {
             JFrame reportFrame = new JFrame("문제 신고");
-            reportFrame.setSize(500, 400);
+            reportFrame.setSize(500, 450);
             reportFrame.setLocationRelativeTo(null);
-
             reportFrame.add(new ReportPanel(rental, () -> {
                 updateLabels();
                 reportFrame.dispose();
             }));
-
             reportFrame.setVisible(true);
         });
 
-        JButton backButton = new JButton("뒤로가기");
-        backButton.addActionListener(e ->
+        mainButton.addActionListener(e ->
             NavigationManager.getInstance().showPanel("MAIN"));
+
+        approveButton.setVisible(isOwner);
+        startButton.setVisible(!isOwner);
+        returnButton.setVisible(isOwner);
+        reportButton.setVisible(isOwner);
 
         buttonPanel.add(approveButton);
         buttonPanel.add(startButton);
         buttonPanel.add(returnButton);
         buttonPanel.add(reportButton);
-        buttonPanel.add(backButton);
+        buttonPanel.add(mainButton);
 
         add(titleLabel, BorderLayout.NORTH);
         add(infoPanel, BorderLayout.CENTER);
@@ -119,13 +133,9 @@ public class TransactionPanel extends JPanel {
         borrowerLabel.setText("대여자: " + rental.getBorrower().getName());
         itemStateLabel.setText("물품 상태: " + rental.getItem().getStateName());
         rentalStatusLabel.setText("거래 상태: " + rental.getStatusText());
-
         ownerTempLabel.setText(
-                String.format("소유자 매너온도: %.1f℃", rental.getOwner().getTemperature().getValue())
-        );
-
+            String.format("소유자 매너온도: %.1f℃", rental.getOwner().getTemperature().getValue()));
         borrowerTempLabel.setText(
-                String.format("대여자 매너온도: %.1f℃", rental.getBorrower().getTemperature().getValue())
-        );
+            String.format("대여자 매너온도: %.1f℃", rental.getBorrower().getTemperature().getValue()));
     }
 }

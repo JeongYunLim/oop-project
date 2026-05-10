@@ -1,10 +1,15 @@
 package ui;
 
+import domain.Inquiry;
 import domain.Item;
 import domain.User;
+import manager.InquiryManager;
 import manager.ItemManager;
 import manager.NavigationManager;
+import manager.RentalManager;
 import manager.UserManager;
+import transaction.Rental;
+import transaction.RentalStatus;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -14,29 +19,31 @@ public class MyPagePanel extends JPanel {
 
     private JLabel nameLabel = new JLabel("-");
     private JLabel tempLabel = new JLabel("-");
-    private DefaultTableModel tableModel;
+    private DefaultTableModel myItemsModel;
+    private DefaultTableModel borrowingModel;
+    private DefaultTableModel requestedModel;
+    private DefaultTableModel sentModel;
+    private DefaultTableModel rcvModel;
+    private ArrayList<Inquiry> rcvInquiries = new ArrayList<>();
 
     public MyPagePanel() {
         setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JPanel infoPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        infoPanel.add(new JLabel("--- 마이페이지 ---"));
+        JPanel infoPanel = new JPanel(new GridLayout(2, 1, 5, 5));
         infoPanel.add(nameLabel);
         infoPanel.add(tempLabel);
 
-        String[] cols = {"물품명", "카테고리", "가격(원/시간)", "상태"};
-        tableModel = new DefaultTableModel(cols, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        JTable itemTable = new JTable(tableModel);
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("내가 등록한 물품",    buildMyItemsTab());
+        tabs.addTab("내가 빌린 물품",      buildBorrowingTab());
+        tabs.addTab("대여 요청 받은 목록", buildRequestedTab());
+        tabs.addTab("문의 관리",           buildInquiryTab());
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton backBtn   = new JButton("뒤로가기");
+        JButton backBtn   = new JButton("메인으로");
         JButton logoutBtn = new JButton("로그아웃");
-
-        backBtn.addActionListener(e ->
-            NavigationManager.getInstance().showPanel("MAIN"));
+        backBtn.addActionListener(e -> NavigationManager.getInstance().showPanel("MAIN"));
         logoutBtn.addActionListener(e -> {
             UserManager.getInstance().logout();
             NavigationManager.getInstance().showPanel("MAIN");
@@ -44,36 +51,167 @@ public class MyPagePanel extends JPanel {
         buttonPanel.add(backBtn);
         buttonPanel.add(logoutBtn);
 
-        add(infoPanel, BorderLayout.NORTH);
-        add(new JScrollPane(itemTable), BorderLayout.CENTER);
+        add(infoPanel,   BorderLayout.NORTH);
+        add(tabs,        BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private JScrollPane buildMyItemsTab() {
+        String[] cols = {"물품명", "카테고리", "가격(원/시간)", "상태"};
+        myItemsModel = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        return new JScrollPane(new JTable(myItemsModel));
+    }
+
+    private JScrollPane buildBorrowingTab() {
+        String[] cols = {"물품명", "소유자", "대여 시작", "거래 상태"};
+        borrowingModel = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        return new JScrollPane(new JTable(borrowingModel));
+    }
+
+    private JScrollPane buildRequestedTab() {
+        String[] cols = {"물품명", "대여 요청자", "거래 상태"};
+        requestedModel = new DefaultTableModel(cols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        return new JScrollPane(new JTable(requestedModel));
+    }
+
+    private JPanel buildInquiryTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JTabbedPane inquiryTabs = new JTabbedPane();
+
+        String[] sentCols = {"물품ID", "받는사람", "문의내용", "답변"};
+        sentModel = new DefaultTableModel(sentCols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JScrollPane sentPane = new JScrollPane(new JTable(sentModel));
+
+        String[] rcvCols = {"물품ID", "보낸사람", "문의내용", "답변 여부"};
+        rcvModel = new DefaultTableModel(rcvCols, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable rcvTable = new JTable(rcvModel);
+
+        JButton replyBtn = new JButton("답변하기");
+        replyBtn.addActionListener(e -> {
+            int row = rcvTable.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(panel, "문의를 선택하세요.");
+                return;
+            }
+            if (row >= rcvInquiries.size()) return;
+            Inquiry inquiry = rcvInquiries.get(row);
+            if (inquiry.hasReply()) {
+                JOptionPane.showMessageDialog(panel, "이미 답변된 문의입니다.");
+                return;
+            }
+            String replyText = JOptionPane.showInputDialog(panel, "답변 내용을 입력하세요:");
+            if (replyText != null && !replyText.trim().isEmpty()) {
+                inquiry.addReply(replyText.trim());
+                rcvModel.setValueAt("답변 완료", row, 3);
+                JOptionPane.showMessageDialog(panel, "답변이 등록되었습니다.");
+            }
+        });
+
+        JPanel rcvBtnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        rcvBtnPanel.add(replyBtn);
+
+        JPanel rcvPanel = new JPanel(new BorderLayout());
+        rcvPanel.add(new JScrollPane(rcvTable), BorderLayout.CENTER);
+        rcvPanel.add(rcvBtnPanel, BorderLayout.SOUTH);
+
+        inquiryTabs.addTab("보낸 문의", sentPane);
+        inquiryTabs.addTab("받은 문의", rcvPanel);
+
+        panel.add(inquiryTabs, BorderLayout.CENTER);
+        return panel;
     }
 
     public void refresh() {
         User user = UserManager.getInstance().getLoggedInUser();
-        if (user != null) {
-            nameLabel.setText("이름: " + user.getName());
-            tempLabel.setText(String.format("매너온도: %.1f °C", user.getTemperature().getValue()));
-            tableModel.setRowCount(0);
-            ArrayList<Item> items = ItemManager.getInstance().getItemsByOwner(user.getId());
-            for (Item item : items) {
-                tableModel.addRow(new Object[]{
-                    item.getName(), item.getCategory(),
-                    item.getPricePerHour(), item.getStateName()
-                });
-            }
-        } else {
+        if (user == null) {
             nameLabel.setText("로그인이 필요합니다.");
             tempLabel.setText("");
-            tableModel.setRowCount(0);
+            myItemsModel.setRowCount(0);
+            borrowingModel.setRowCount(0);
+            requestedModel.setRowCount(0);
+            sentModel.setRowCount(0);
+            rcvModel.setRowCount(0);
+            rcvInquiries.clear();
+            return;
+        }
+
+        nameLabel.setText("이름: " + user.getName());
+        tempLabel.setText(String.format("매너온도: %.1f °C", user.getTemperature().getValue()));
+
+        // 내가 등록한 물품
+        myItemsModel.setRowCount(0);
+        for (Item item : ItemManager.getInstance().getItemsByOwner(user.getId())) {
+            myItemsModel.addRow(new Object[]{
+                item.getName(), item.getCategory(), item.getPricePerHour(), item.getStateName()
+            });
+        }
+
+        // 내가 빌린 물품 (borrower 기준, 진행 중인 상태)
+        borrowingModel.setRowCount(0);
+        for (Rental r : RentalManager.getInstance().getRentalsByBorrower(user.getId())) {
+            if (r.getStatus() == RentalStatus.RENTING
+                    || r.getStatus() == RentalStatus.APPROVED
+                    || r.getStatus() == RentalStatus.REQUESTED) {
+                borrowingModel.addRow(new Object[]{
+                    r.getItem().getName(),
+                    r.getOwner().getName(),
+                    r.getItem().getTimeSlot() != null ? r.getItem().getTimeSlot().toString() : "-",
+                    r.getStatusText()
+                });
+            }
+        }
+
+        // 대여 요청 받은 목록 (owner 기준)
+        requestedModel.setRowCount(0);
+        for (Rental r : RentalManager.getInstance().getRentalsByOwner(user.getId())) {
+            if (r.getStatus() == RentalStatus.REQUESTED || r.getStatus() == RentalStatus.APPROVED) {
+                requestedModel.addRow(new Object[]{
+                    r.getItem().getName(),
+                    r.getBorrower().getName(),
+                    r.getStatusText()
+                });
+            }
+        }
+
+        // 보낸 문의
+        sentModel.setRowCount(0);
+        for (Inquiry i : InquiryManager.getInstance().getInquiriesByUser(user.getId())) {
+            sentModel.addRow(new Object[]{
+                i.getItemId(),
+                i.getToUserId(),
+                i.getMessage(),
+                i.hasReply() ? i.getReply() : "미답변"
+            });
+        }
+
+        // 받은 문의
+        rcvInquiries = InquiryManager.getInstance().getInquiriesByOwner(user.getId());
+        rcvModel.setRowCount(0);
+        for (Inquiry i : rcvInquiries) {
+            rcvModel.addRow(new Object[]{
+                i.getItemId(),
+                i.getFromUserId(),
+                i.getMessage(),
+                i.hasReply() ? "답변 완료" : "미답변"
+            });
         }
     }
 
     @Override
-public void updateUI() {
-    super.updateUI();
-    if (nameLabel != null && tableModel != null) {
-        refresh();
+    public void updateUI() {
+        super.updateUI();
+        if (nameLabel != null && myItemsModel != null) {
+            refresh();
+        }
     }
-}
 }

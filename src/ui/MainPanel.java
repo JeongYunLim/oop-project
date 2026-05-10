@@ -11,6 +11,14 @@ public class MainPanel extends JPanel {
 
     private JLabel userInfoLabel = new JLabel("로그인하세요");
 
+    private JButton loginBtn;
+    private JButton signupBtn;
+    private JButton itemListBtn;
+    private JButton itemRegisterBtn;
+    private JButton mypageBtn;
+    private JButton adminBtn;
+    private JButton logoutBtn;
+
     public MainPanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -31,14 +39,13 @@ public class MainPanel extends JPanel {
         JPanel buttonPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(30, 80, 30, 80));
 
-        JButton loginBtn        = new JButton("로그인");
-        JButton signupBtn       = new JButton("회원가입");
-        JButton itemListBtn     = new JButton("물품 목록 보기");
-        JButton itemRegisterBtn = new JButton("물품 등록");
-        JButton mypageBtn       = new JButton("마이페이지");
-        JButton adminBtn        = new JButton("관리자 페이지");
-        JButton logoutBtn       = new JButton("로그아웃");
-        JLabel placeholder      = new JLabel();
+        loginBtn        = new JButton("로그인");
+        signupBtn       = new JButton("회원가입");
+        itemListBtn     = new JButton("물품 목록 보기");
+        itemRegisterBtn = new JButton("물품 등록");
+        mypageBtn       = new JButton("마이페이지");
+        adminBtn        = new JButton("관리자 페이지");
+        logoutBtn       = new JButton("로그아웃");
 
         loginBtn.addActionListener(e ->
             NavigationManager.getInstance().showPanel("LOGIN"));
@@ -81,7 +88,7 @@ public class MainPanel extends JPanel {
         buttonPanel.add(mypageBtn);
         buttonPanel.add(adminBtn);
         buttonPanel.add(logoutBtn);
-        buttonPanel.add(placeholder);
+        buttonPanel.add(new JLabel());
 
         add(northPanel, BorderLayout.NORTH);
         add(buttonPanel, BorderLayout.CENTER);
@@ -89,12 +96,37 @@ public class MainPanel extends JPanel {
 
     public void refresh() {
         User user = UserManager.getInstance().getLoggedInUser();
-        if (user != null) {
+        if (user == null) {
+            userInfoLabel.setText("로그인하세요");
+            loginBtn.setVisible(true);
+            signupBtn.setVisible(true);
+            itemListBtn.setVisible(false);
+            itemRegisterBtn.setVisible(false);
+            mypageBtn.setVisible(false);
+            adminBtn.setVisible(false);
+            logoutBtn.setVisible(false);
+        } else if (Admin.isAdmin(user)) {
             userInfoLabel.setText(String.format(
                 "%s님 안녕하세요! 매너온도: %.1f°C",
                 user.getName(), user.getTemperature().getValue()));
+            loginBtn.setVisible(false);
+            signupBtn.setVisible(false);
+            itemListBtn.setVisible(false);
+            itemRegisterBtn.setVisible(false);
+            mypageBtn.setVisible(false);
+            adminBtn.setVisible(true);
+            logoutBtn.setVisible(true);
         } else {
-            userInfoLabel.setText("로그인하세요");
+            userInfoLabel.setText(String.format(
+                "%s님 안녕하세요! 매너온도: %.1f°C",
+                user.getName(), user.getTemperature().getValue()));
+            loginBtn.setVisible(false);
+            signupBtn.setVisible(false);
+            itemListBtn.setVisible(true);
+            itemRegisterBtn.setVisible(true);
+            mypageBtn.setVisible(true);
+            adminBtn.setVisible(false);
+            logoutBtn.setVisible(true);
         }
     }
 }

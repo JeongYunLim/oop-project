@@ -22,10 +22,22 @@ public class Inquiry {
         this.createdAt   = LocalDateTime.now();
     }
 
-    public int getInquiryId()       { return inquiryId; }
-    public String getFromUserId()   { return fromUserId; }
-    public String getToUserId()     { return toUserId; }
-    public int getItemId()          { return itemId; }
-    public String getMessage()      { return message; }
+    private String reply = null;
+    private LocalDateTime repliedAt = null;
+
+    public int getInquiryId()           { return inquiryId; }
+    public String getFromUserId()       { return fromUserId; }
+    public String getToUserId()         { return toUserId; }
+    public int getItemId()              { return itemId; }
+    public String getMessage()          { return message; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public String getReply()            { return reply; }
+    public LocalDateTime getRepliedAt() { return repliedAt; }
+    public boolean hasReply()           { return reply != null && !reply.isEmpty(); }
+
+    public void addReply(String replyText) {
+        this.reply     = replyText;
+        this.repliedAt = LocalDateTime.now();
+    }
 }

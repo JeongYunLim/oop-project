@@ -29,4 +29,12 @@ public class InquiryManager {
         }
         return result;
     }
+
+    public ArrayList<Inquiry> getInquiriesByOwner(String ownerId) {
+        ArrayList<Inquiry> result = new ArrayList<>();
+        for (Inquiry i : inquiries) {
+            if (ownerId.equals(i.getToUserId())) result.add(i);
+        }
+        return result;
+    }
 }

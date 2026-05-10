@@ -4,16 +4,17 @@ import domain.User;
 import java.util.ArrayList;
 
 public class UserManager {
-    private ArrayList<User> users = new ArrayList<>();
+    private static ArrayList<User> users = new ArrayList<>();
     private User loggedInUser = null;
     private String lastLoginError = "";
 
-    // 싱글톤 패턴 적용
     private static UserManager instance = new UserManager();
-    
+
     private UserManager() {
-        users.add(new User("test", "1234", "홍길동"));
-        users.add(new User("admin", "admin1234", "관리자"));
+        if (users.isEmpty()) {
+            users.add(new User("test", "1234", "홍길동"));
+            users.add(new User("admin", "admin1234", "관리자"));
+        }
     }
 
     public static UserManager getInstance() {
