@@ -1,5 +1,6 @@
 package ui;
 
+import manager.NavigationManager;
 import transaction.Rental;
 
 import javax.swing.*;
@@ -95,10 +96,15 @@ public class TransactionPanel extends JPanel {
             reportFrame.setVisible(true);
         });
 
+        JButton backButton = new JButton("뒤로가기");
+        backButton.addActionListener(e ->
+            NavigationManager.getInstance().showPanel("MAIN"));
+
         buttonPanel.add(approveButton);
         buttonPanel.add(startButton);
         buttonPanel.add(returnButton);
         buttonPanel.add(reportButton);
+        buttonPanel.add(backButton);
 
         add(titleLabel, BorderLayout.NORTH);
         add(infoPanel, BorderLayout.CENTER);

@@ -1,5 +1,6 @@
 package ui;
 
+import domain.Admin;
 import domain.User;
 import manager.NavigationManager;
 import manager.UserManager;
@@ -59,8 +60,14 @@ public class MainPanel extends JPanel {
                 NavigationManager.getInstance().showPanel("MYPAGE");
             }
         });
-        adminBtn.addActionListener(e ->
-            NavigationManager.getInstance().showPanel("ADMIN"));
+        adminBtn.addActionListener(e -> {
+            User user = UserManager.getInstance().getLoggedInUser();
+            if (!Admin.isAdmin(user)) {
+                JOptionPane.showMessageDialog(this, "관리자만 접근 가능합니다.");
+                return;
+            }
+            NavigationManager.getInstance().showPanel("ADMIN");
+        });
         logoutBtn.addActionListener(e -> {
             UserManager.getInstance().logout();
             refresh();

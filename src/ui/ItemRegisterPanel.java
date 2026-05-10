@@ -84,7 +84,7 @@ public class ItemRegisterPanel extends JPanel {
     private JPanel buildButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         JButton registerButton = new JButton("등록");
-        JButton cancelButton   = new JButton("취소");
+        JButton cancelButton   = new JButton("뒤로가기");
 
         registerButton.addActionListener(e -> onRegister());
         cancelButton.addActionListener(e -> onCancel());

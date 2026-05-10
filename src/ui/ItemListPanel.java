@@ -66,6 +66,12 @@ public class ItemListPanel extends JPanel {
         setLayout(new BorderLayout(5, 5));
         add(buildTopPanel(), BorderLayout.NORTH);
         add(buildTablePanel(), BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton backBtn = new JButton("뒤로가기");
+        backBtn.addActionListener(e -> NavigationManager.getInstance().showPanel("MAIN"));
+        bottomPanel.add(backBtn);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
     /** 상단: 1행(검색+카테고리) + 2행(건물+대여가능+정렬) */

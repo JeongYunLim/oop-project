@@ -60,7 +60,7 @@ public class ItemDetailPanel extends JPanel {
         JButton rentalBtn  = new JButton("대여 요청");
         wishBtn            = new JButton("찜하기");
         JButton inquiryBtn = new JButton("문의하기");
-        JButton backBtn    = new JButton("목록으로");
+        JButton backBtn    = new JButton("뒤로가기");
 
         rentalBtn.addActionListener(e -> onRentalRequest());
         wishBtn.addActionListener(e -> onToggleWish());

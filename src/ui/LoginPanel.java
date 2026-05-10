@@ -17,10 +17,12 @@ public class LoginPanel extends JPanel {
         JPasswordField pwField = new JPasswordField();
         JButton loginBtn = new JButton("로그인");
         JButton toSignupBtn = new JButton("회원가입 이동");
+        JButton backBtn = new JButton("뒤로가기");
 
         add(new JLabel("아이디:"));  add(idField);
         add(new JLabel("비밀번호:")); add(pwField);
         add(loginBtn);               add(toSignupBtn);
+        add(backBtn);                add(new JLabel());
 
         loginBtn.addActionListener(e -> {
             String id = idField.getText();
@@ -36,5 +38,8 @@ public class LoginPanel extends JPanel {
 
         toSignupBtn.addActionListener(e ->
             NavigationManager.getInstance().showPanel("SIGNUP"));
+
+        backBtn.addActionListener(e ->
+            NavigationManager.getInstance().showPanel("MAIN"));
     }
 }

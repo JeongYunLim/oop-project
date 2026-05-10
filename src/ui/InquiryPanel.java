@@ -29,7 +29,7 @@ public class InquiryPanel extends JPanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton sendBtn   = new JButton("전송");
-        JButton cancelBtn = new JButton("취소");
+        JButton cancelBtn = new JButton("뒤로가기");
 
         sendBtn.addActionListener(e -> {
             User sender = UserManager.getInstance().getLoggedInUser();
