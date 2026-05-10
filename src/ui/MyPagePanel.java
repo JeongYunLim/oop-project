@@ -362,7 +362,9 @@ public class MyPagePanel extends JPanel {
             myItemList.clear();
             borrowingModel.setRowCount(0);
             borrowingRentalList.clear();
+            borrowingRentalList.clear();
             requestedModel.setRowCount(0);
+            requestedRentalList.clear();
             requestedRentalList.clear();
             sentModel.setRowCount(0);
             rcvModel.setRowCount(0);

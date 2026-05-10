@@ -7,6 +7,7 @@ import manager.ReportManager;
 import strategy.PenaltyPolicy;
 import java.time.LocalDateTime;
 
+
 public class Rental extends Transaction {
 
     private boolean isResolved = false;
@@ -50,8 +51,13 @@ public class Rental extends Transaction {
             System.out.println("승인된 상태에서만 대여 시작이 가능합니다.");
             return;
         }
+        if (status != RentalStatus.APPROVED) {
+            System.out.println("승인된 상태에서만 대여 시작이 가능합니다.");
+            return;
+        }
         item.startRental();
         status = RentalStatus.RENTING;
+        startedAt = LocalDateTime.now();
         startedAt = LocalDateTime.now();
     }
 
