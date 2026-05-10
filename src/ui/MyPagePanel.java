@@ -13,6 +13,7 @@ import transaction.RentalStatus;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class MyPagePanel extends JPanel {
@@ -25,6 +26,8 @@ public class MyPagePanel extends JPanel {
     private DefaultTableModel sentModel;
     private DefaultTableModel rcvModel;
     private ArrayList<Inquiry> rcvInquiries = new ArrayList<>();
+    private ArrayList<Rental> requestedRentalList = new ArrayList<>();
+    private ArrayList<Rental> borrowingRentalList = new ArrayList<>();
 
     public MyPagePanel() {
         setLayout(new BorderLayout(10, 10));
@@ -64,20 +67,74 @@ public class MyPagePanel extends JPanel {
         return new JScrollPane(new JTable(myItemsModel));
     }
 
-    private JScrollPane buildBorrowingTab() {
-        String[] cols = {"물품명", "소유자", "대여 시작", "거래 상태"};
+    private JPanel buildBorrowingTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        String[] cols = {"물품명", "소유자", "대여 시작 시각", "거래 상태"};
         borrowingModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        return new JScrollPane(new JTable(borrowingModel));
+        JTable table = new JTable(borrowingModel);
+
+        JButton startBtn = new JButton("대여 시작");
+        startBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(panel, "대여 시작할 항목을 선택하세요.");
+                return;
+            }
+            Rental rental = borrowingRentalList.get(row);
+            if (rental.getStatus() != RentalStatus.APPROVED) {
+                JOptionPane.showMessageDialog(panel, "소유자의 승인 후에 대여를 시작할 수 있습니다.");
+                return;
+            }
+            rental.start();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM/dd HH:mm");
+            borrowingModel.setValueAt(rental.getStartedAt().format(fmt), row, 2);
+            borrowingModel.setValueAt("대여 중", row, 3);
+            JOptionPane.showMessageDialog(panel, "대여가 시작되었습니다.");
+        });
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        btnPanel.add(startBtn);
+
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        panel.add(btnPanel, BorderLayout.SOUTH);
+        return panel;
     }
 
-    private JScrollPane buildRequestedTab() {
+    private JPanel buildRequestedTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+
         String[] cols = {"물품명", "대여 요청자", "거래 상태"};
         requestedModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        return new JScrollPane(new JTable(requestedModel));
+        JTable table = new JTable(requestedModel);
+
+        JButton approveBtn = new JButton("승인하기");
+        approveBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(panel, "승인할 요청을 선택하세요.");
+                return;
+            }
+            Rental rental = requestedRentalList.get(row);
+            if (rental.getStatus() != RentalStatus.REQUESTED) {
+                JOptionPane.showMessageDialog(panel, "이미 처리된 요청입니다.");
+                return;
+            }
+            rental.approve();
+            requestedModel.setValueAt("예약 승인됨", row, 2);
+            JOptionPane.showMessageDialog(panel, "대여 요청을 승인했습니다.");
+        });
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        btnPanel.add(approveBtn);
+
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        panel.add(btnPanel, BorderLayout.SOUTH);
+        return panel;
     }
 
     private JPanel buildInquiryTab() {
@@ -138,7 +195,9 @@ public class MyPagePanel extends JPanel {
             tempLabel.setText("");
             myItemsModel.setRowCount(0);
             borrowingModel.setRowCount(0);
+            borrowingRentalList.clear();
             requestedModel.setRowCount(0);
+            requestedRentalList.clear();
             sentModel.setRowCount(0);
             rcvModel.setRowCount(0);
             rcvInquiries.clear();
@@ -158,23 +217,30 @@ public class MyPagePanel extends JPanel {
 
         // 내가 빌린 물품 (borrower 기준, 진행 중인 상태)
         borrowingModel.setRowCount(0);
+        borrowingRentalList = new ArrayList<>();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM/dd HH:mm");
         for (Rental r : RentalManager.getInstance().getRentalsByBorrower(user.getId())) {
-            if (r.getStatus() == RentalStatus.RENTING
+            if (r.getStatus() == RentalStatus.REQUESTED
                     || r.getStatus() == RentalStatus.APPROVED
-                    || r.getStatus() == RentalStatus.REQUESTED) {
+                    || r.getStatus() == RentalStatus.RENTING) {
+                borrowingRentalList.add(r);
+                String startedAt = r.getStartedAt() != null
+                        ? r.getStartedAt().format(fmt) : "-";
                 borrowingModel.addRow(new Object[]{
                     r.getItem().getName(),
                     r.getOwner().getName(),
-                    r.getItem().getTimeSlot() != null ? r.getItem().getTimeSlot().toString() : "-",
+                    startedAt,
                     r.getStatusText()
                 });
             }
         }
 
-        // 대여 요청 받은 목록 (owner 기준)
+        // 대여 요청 받은 목록 (owner 기준, 테이블 행 인덱스 = 리스트 인덱스)
         requestedModel.setRowCount(0);
+        requestedRentalList = new ArrayList<>();
         for (Rental r : RentalManager.getInstance().getRentalsByOwner(user.getId())) {
             if (r.getStatus() == RentalStatus.REQUESTED || r.getStatus() == RentalStatus.APPROVED) {
+                requestedRentalList.add(r);
                 requestedModel.addRow(new Object[]{
                     r.getItem().getName(),
                     r.getBorrower().getName(),

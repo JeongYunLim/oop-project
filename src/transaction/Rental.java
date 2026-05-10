@@ -5,10 +5,14 @@ import domain.User;
 import manager.RentalManager;
 import manager.ReportManager;
 import strategy.PenaltyPolicy;
+import java.time.LocalDateTime;
 
 public class Rental extends Transaction {
 
     private boolean isResolved = false;
+    private LocalDateTime startedAt = null;
+
+    public LocalDateTime getStartedAt() { return startedAt; }
 
     public boolean isResolved() { return isResolved; }
     public void resolve() { isResolved = true; }
@@ -35,8 +39,13 @@ public class Rental extends Transaction {
 
     @Override
     public void start() {
+        if (status != RentalStatus.APPROVED) {
+            System.out.println("승인된 상태에서만 대여 시작이 가능합니다.");
+            return;
+        }
         item.startRental();
         status = RentalStatus.RENTING;
+        startedAt = LocalDateTime.now();
     }
 
     @Override
