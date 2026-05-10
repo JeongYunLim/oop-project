@@ -2,7 +2,7 @@ package state;
 
 import domain.Item;
 
-public class RentedState implements ItemState {
+public class RentedState extends ItemState {
 
     @Override
     public void requestRental(Item item) {

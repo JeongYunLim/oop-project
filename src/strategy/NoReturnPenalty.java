@@ -2,7 +2,7 @@ package strategy;
 
 import domain.User;
 
-public class NoReturnPenalty implements PenaltyPolicy {
+public class NoReturnPenalty extends PenaltyPolicy {
 
     @Override
     public void apply(User user) {

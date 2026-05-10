@@ -2,9 +2,9 @@ package state;
 
 import domain.Item;
 
-public interface ItemState {
-    void requestRental(Item item);
-    void startRental(Item item);
-    void returnItem(Item item);
-    String getStateName();
+public abstract class ItemState {
+    public abstract void requestRental(Item item);
+    public abstract void startRental(Item item);
+    public abstract void returnItem(Item item);
+    public abstract String getStateName();
 }

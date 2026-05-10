@@ -2,8 +2,8 @@ package strategy;
 
 import domain.User;
 
-public interface PenaltyPolicy {
-    void apply(User user);
-    String getPenaltyName();
-    double getPenaltyAmount();
+public abstract class PenaltyPolicy {
+    public abstract void apply(User user);
+    public abstract String getPenaltyName();
+    public abstract double getPenaltyAmount();
 }

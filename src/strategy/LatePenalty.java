@@ -2,7 +2,7 @@ package strategy;
 
 import domain.User;
 
-public class LatePenalty implements PenaltyPolicy {
+public class LatePenalty extends PenaltyPolicy {
 
     @Override
     public void apply(User user) {

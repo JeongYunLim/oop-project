@@ -2,7 +2,7 @@ package strategy;
 
 import domain.User;
 
-public class DamagePenalty implements PenaltyPolicy {
+public class DamagePenalty extends PenaltyPolicy {
 
     @Override
     public void apply(User user) {
