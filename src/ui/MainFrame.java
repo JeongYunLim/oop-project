@@ -42,6 +42,7 @@ public class MainFrame extends JFrame {
         inquiryPanel     = new InquiryPanel();
 
         itemListPanel.setDetailPanel(itemDetailPanel);
+        myPagePanel.setDetailPanel(itemDetailPanel);
 
         mainContainer.add(mainPanel,         "MAIN");
         mainContainer.add(loginPanel,        "LOGIN");

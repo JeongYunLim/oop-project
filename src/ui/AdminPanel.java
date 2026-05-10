@@ -16,6 +16,8 @@ public class AdminPanel extends JPanel {
 
     private DefaultTableModel userTableModel;
     private ArrayList<User> userList = new ArrayList<>();
+    private DefaultTableModel reportTableModel;
+    private ArrayList<Rental> reportList = new ArrayList<>();
 
     public AdminPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -40,46 +42,81 @@ public class AdminPanel extends JPanel {
 
     private JPanel buildReportTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        String[] cols = {"물품명", "소유자", "대여자", "거래 상태", "처리 여부"};
-        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+        String[] cols = {"물품명", "소유자", "대여자", "신고 유형", "거래 상태", "처리 여부"};
+        reportTableModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
+        JTable table = new JTable(reportTableModel);
+        loadReportTable();
 
-        ArrayList<Rental> reports = ReportManager.getInstance().getReports();
-        for (Rental r : reports) {
-            model.addRow(new Object[]{
-                r.getItem().getName(),
-                r.getOwner().getName(),
-                r.getBorrower().getName(),
-                r.getStatusText(),
-                r.isResolved() ? "처리됨" : "미처리"
-            });
-        }
-
-        JTable table = new JTable(model);
-
-        JButton resolveBtn = new JButton("처리 완료");
-        resolveBtn.addActionListener(e -> {
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
             int row = table.getSelectedRow();
-            if (row < 0) {
-                JOptionPane.showMessageDialog(panel, "신고를 선택해주세요.");
-                return;
-            }
-            Rental rental = reports.get(row);
-            if (rental.isResolved()) {
-                JOptionPane.showMessageDialog(panel, "이미 처리된 신고입니다.");
-                return;
-            }
-            rental.resolve();
-            model.setValueAt("처리됨", row, 4);
+            if (row < 0 || row >= reportList.size()) return;
+            Rental rental = reportList.get(row);
+
+            JDialog dialog = new JDialog();
+            dialog.setTitle("신고 상세");
+            dialog.setSize(400, 280);
+            dialog.setLocationRelativeTo(panel);
+            dialog.setLayout(new BorderLayout(10, 10));
+
+            JPanel info = new JPanel(new GridLayout(0, 1, 4, 4));
+            info.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            info.add(new JLabel("신고 유형: " + rental.getPendingPolicy().getPenaltyName()));
+            info.add(new JLabel("처리 여부: " + (rental.isResolved() ? "처리됨" : "미처리")));
+
+            String detail = rental.getReportDetail();
+            JTextArea detailArea = new JTextArea(detail.isEmpty() ? "내용 없음" : detail);
+            detailArea.setEditable(false);
+            detailArea.setLineWrap(true);
+            detailArea.setWrapStyleWord(true);
+            JScrollPane scroll = new JScrollPane(detailArea);
+            scroll.setBorder(BorderFactory.createTitledBorder("신고 내용"));
+
+            JButton resolveBtn = new JButton("처리 완료");
+            resolveBtn.setEnabled(!rental.isResolved());
+            resolveBtn.addActionListener(ev -> {
+                rental.resolve();
+                reportTableModel.setValueAt("처리됨", row, 5);
+                JOptionPane.showMessageDialog(dialog, "처리가 완료되었습니다.");
+                dialog.dispose();
+            });
+
+            JPanel btnPanel2 = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            btnPanel2.add(resolveBtn);
+
+            dialog.add(info,   BorderLayout.NORTH);
+            dialog.add(scroll, BorderLayout.CENTER);
+            dialog.add(btnPanel2, BorderLayout.SOUTH);
+            dialog.setVisible(true);
+            table.clearSelection();
         });
 
+        JButton refreshBtn = new JButton("새로고침");
+        refreshBtn.addActionListener(e -> loadReportTable());
+
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        btnPanel.add(resolveBtn);
+        btnPanel.add(refreshBtn);
 
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         panel.add(btnPanel, BorderLayout.SOUTH);
         return panel;
+    }
+
+    private void loadReportTable() {
+        reportList = ReportManager.getInstance().getReports();
+        reportTableModel.setRowCount(0);
+        for (Rental r : reportList) {
+            reportTableModel.addRow(new Object[]{
+                r.getItem().getName(),
+                r.getOwner().getName(),
+                r.getBorrower().getName(),
+                r.getPendingPolicy().getPenaltyName(),
+                r.getStatusText(),
+                r.isResolved() ? "처리됨" : "미처리"
+            });
+        }
     }
 
     private JPanel buildUserTab() {

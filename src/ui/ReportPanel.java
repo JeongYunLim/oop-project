@@ -59,7 +59,7 @@ public class ReportPanel extends JPanel {
         centerPanel.add(Box.createVerticalStrut(10));
         centerPanel.add(detailScroll);
 
-        JButton applyButton = new JButton("패널티 적용");
+        JButton applyButton = new JButton("신고 완료");
 
         applyButton.addActionListener(e -> {
             PenaltyPolicy policy = null;
@@ -77,13 +77,9 @@ public class ReportPanel extends JPanel {
                 return;
             }
 
-            rental.reportProblem(policy);
+            rental.reportProblem(policy, reportDetailArea.getText().trim());
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    policy.getPenaltyName() + "가 적용되었습니다.\n"
-                            + "대여자 매너온도 -" + policy.getPenaltyAmount()
-            );
+            JOptionPane.showMessageDialog(this, "신고가 완료되었습니다.");
 
             if (onComplete != null) {
                 onComplete.run();

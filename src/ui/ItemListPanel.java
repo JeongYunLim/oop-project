@@ -3,6 +3,7 @@ package ui;
 import manager.ItemManager;
 import manager.NavigationManager;
 import domain.Item;
+import java.time.format.DateTimeFormatter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -127,7 +128,7 @@ public class ItemListPanel extends JPanel {
 
     /** 중앙: 이름/카테고리/가격 3열 JTable */
     private JScrollPane buildTablePanel() {
-        String[] columns = {"이름", "카테고리", "가격(원/시간)"};
+        String[] columns = {"이름", "카테고리", "가격(원/시간)", "대여 가능 시간"};
 
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -203,14 +204,20 @@ public class ItemListPanel extends JPanel {
     }
 
     /** 주어진 목록으로 테이블 갱신 — 모든 표시는 이 메서드를 통해 */
+    private static final DateTimeFormatter SLOT_DATE_FMT = DateTimeFormatter.ofPattern("MM/dd HH:mm");
+    private static final DateTimeFormatter SLOT_TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
+
     private void displayItems(ArrayList<Item> items) {
         currentItems = items;
-        tableModel.setRowCount(0); // 기존 행 전체 제거
+        tableModel.setRowCount(0);
         for (Item item : items) {
+            String timeRange = item.getTimeSlot().getStartTime().format(SLOT_DATE_FMT)
+                    + " ~ " + item.getTimeSlot().getEndTime().format(SLOT_TIME_FMT);
             tableModel.addRow(new Object[]{
                 item.getName(),
                 item.getCategory(),
-                item.getPricePerHour()
+                item.getPricePerHour(),
+                timeRange
             });
         }
     }

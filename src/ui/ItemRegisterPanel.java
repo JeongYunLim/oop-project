@@ -10,14 +10,12 @@ import manager.UserManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.time.LocalTime;
+import java.util.stream.IntStream;
 
 public class ItemRegisterPanel extends JPanel {
-
-    private static final DateTimeFormatter FMT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private static final String[] CATEGORIES =
             {"전자기기", "도서", "생활용품", "의류", "스포츠", "기타"};
@@ -30,8 +28,8 @@ public class ItemRegisterPanel extends JPanel {
     private JTextField    priceField;
     private JTextField    buildingField;
     private JTextField    detailField;
-    private JTextField    startTimeField;
-    private JTextField    endTimeField;
+    private JComboBox<String> startHourCombo;
+    private JComboBox<String> endHourCombo;
 
     public ItemRegisterPanel(ItemManager itemManager) {
         this.itemManager = itemManager;
@@ -58,17 +56,22 @@ public class ItemRegisterPanel extends JPanel {
         priceField      = new JTextField(10);
         buildingField   = new JTextField(10);
         detailField     = new JTextField(10);
-        startTimeField  = new JTextField("yyyy-MM-dd HH:mm", 16);
-        endTimeField    = new JTextField("yyyy-MM-dd HH:mm", 16);
+        String[] hours = IntStream.range(0, 24)
+                .mapToObj(h -> String.format("%02d:00", h))
+                .toArray(String[]::new);
+        startHourCombo = new JComboBox<>(hours);
+        endHourCombo   = new JComboBox<>(hours);
+        startHourCombo.setSelectedIndex(9);
+        endHourCombo.setSelectedIndex(11);
 
-        addRow(form, gbc, 0, "물품명 *",                      nameField);
-        addRow(form, gbc, 1, "카테고리 *",                    categoryCombo);
-        addRow(form, gbc, 2, "설명",                          new JScrollPane(descriptionArea));
-        addRow(form, gbc, 3, "시간당 가격(원) *",             priceField);
-        addRow(form, gbc, 4, "건물명 *",                      buildingField);
-        addRow(form, gbc, 5, "세부 위치",                     detailField);
-        addRow(form, gbc, 6, "대여 시작 (yyyy-MM-dd HH:mm) *", startTimeField);
-        addRow(form, gbc, 7, "대여 종료 (yyyy-MM-dd HH:mm) *", endTimeField);
+        addRow(form, gbc, 0, "물품명 *",        nameField);
+        addRow(form, gbc, 1, "카테고리 *",      categoryCombo);
+        addRow(form, gbc, 2, "설명",             new JScrollPane(descriptionArea));
+        addRow(form, gbc, 3, "시간당 가격(원) *", priceField);
+        addRow(form, gbc, 4, "건물명 *",         buildingField);
+        addRow(form, gbc, 5, "세부 위치",         detailField);
+        addRow(form, gbc, 6, "대여 시작 시간 *",  startHourCombo);
+        addRow(form, gbc, 7, "대여 종료 시간 *",  endHourCombo);
 
         return form;
     }
@@ -116,14 +119,11 @@ public class ItemRegisterPanel extends JPanel {
             return;
         }
 
-        LocalDateTime startTime, endTime;
-        try {
-            startTime = LocalDateTime.parse(startTimeField.getText().trim(), FMT);
-            endTime   = LocalDateTime.parse(endTimeField.getText().trim(), FMT);
-        } catch (DateTimeParseException e) {
-            showError("시각 형식이 올바르지 않습니다.\n예: 2025-05-01 09:00");
-            return;
-        }
+        LocalDate today = LocalDate.now();
+        LocalDateTime startTime = LocalDateTime.of(today,
+                LocalTime.parse((String) startHourCombo.getSelectedItem()));
+        LocalDateTime endTime   = LocalDateTime.of(today,
+                LocalTime.parse((String) endHourCombo.getSelectedItem()));
 
         TimeSlot timeSlot;
         try {
@@ -164,8 +164,8 @@ public class ItemRegisterPanel extends JPanel {
         priceField.setText("");
         buildingField.setText("");
         detailField.setText("");
-        startTimeField.setText("yyyy-MM-dd HH:mm");
-        endTimeField.setText("yyyy-MM-dd HH:mm");
+        startHourCombo.setSelectedIndex(9);
+        endHourCombo.setSelectedIndex(11);
     }
 
     private void showError(String message) {
