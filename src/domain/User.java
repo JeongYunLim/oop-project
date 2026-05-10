@@ -5,6 +5,7 @@ public class User {
     private String password;
     private String name;
     private Temperature temperature;
+    private boolean isBanned = false;
 
     
     // 생성자: 회원가입 시 아이디, 비밀번호, 이름을 받아 초기화하고 온도 객체도 생성
@@ -21,4 +22,6 @@ public class User {
     public String getPassword() { return password; }
     public String getName() { return name; }
     public Temperature getTemperature() { return temperature; }
+    public boolean isBanned() { return isBanned; }
+    public void setBanned(boolean banned) { this.isBanned = banned; }
 }

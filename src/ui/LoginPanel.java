@@ -32,7 +32,7 @@ public class LoginPanel extends JPanel {
                 SwingUtilities.invokeLater(() ->
                     JOptionPane.showMessageDialog(this, "로그인 성공!"));
             } else {
-                JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 틀렸습니다.");
+                JOptionPane.showMessageDialog(this, UserManager.getInstance().getLastLoginError());
             }
         });
 

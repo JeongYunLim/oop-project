@@ -1,5 +1,6 @@
 package ui;
 
+import domain.Admin;
 import domain.User;
 import manager.NavigationManager;
 import manager.RentalManager;
@@ -9,6 +10,7 @@ import transaction.Rental;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class AdminPanel extends JPanel {
 
@@ -35,36 +37,92 @@ public class AdminPanel extends JPanel {
 
     private JPanel buildReportTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        String[] cols = {"물품명", "소유자", "대여자", "거래 상태"};
+        String[] cols = {"물품명", "소유자", "대여자", "거래 상태", "처리 여부"};
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (Rental r : ReportManager.getInstance().getReports()) {
+
+        ArrayList<Rental> reports = ReportManager.getInstance().getReports();
+        for (Rental r : reports) {
             model.addRow(new Object[]{
                 r.getItem().getName(),
                 r.getOwner().getName(),
                 r.getBorrower().getName(),
-                r.getStatusText()
+                r.getStatusText(),
+                r.isResolved() ? "처리됨" : "미처리"
             });
         }
-        panel.add(new JScrollPane(new JTable(model)));
+
+        JTable table = new JTable(model);
+
+        JButton resolveBtn = new JButton("처리 완료");
+        resolveBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(panel, "신고를 선택해주세요.");
+                return;
+            }
+            Rental rental = reports.get(row);
+            if (rental.isResolved()) {
+                JOptionPane.showMessageDialog(panel, "이미 처리된 신고입니다.");
+                return;
+            }
+            rental.resolve();
+            model.setValueAt("처리됨", row, 4);
+        });
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        btnPanel.add(resolveBtn);
+
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        panel.add(btnPanel, BorderLayout.SOUTH);
         return panel;
     }
 
     private JPanel buildUserTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        String[] cols = {"아이디", "이름", "매너온도"};
+        String[] cols = {"아이디", "이름", "매너온도", "정지 여부"};
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (User u : UserManager.getInstance().getAllUsers()) {
+
+        ArrayList<User> users = UserManager.getInstance().getAllUsers();
+        for (User u : users) {
             model.addRow(new Object[]{
                 u.getId(),
                 u.getName(),
-                String.format("%.1f", u.getTemperature().getValue())
+                String.format("%.1f", u.getTemperature().getValue()),
+                u.isBanned() ? "정지" : "정상"
             });
         }
-        panel.add(new JScrollPane(new JTable(model)));
+
+        JTable table = new JTable(model);
+
+        JButton banBtn = new JButton("정지");
+        banBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(panel, "유저를 선택해주세요.");
+                return;
+            }
+            User user = users.get(row);
+            if (Admin.isAdmin(user)) {
+                JOptionPane.showMessageDialog(panel, "관리자 계정은 정지할 수 없습니다.");
+                return;
+            }
+            if (user.isBanned()) {
+                JOptionPane.showMessageDialog(panel, "이미 정지된 계정입니다.");
+                return;
+            }
+            user.setBanned(true);
+            model.setValueAt("정지", row, 3);
+        });
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        btnPanel.add(banBtn);
+
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        panel.add(btnPanel, BorderLayout.SOUTH);
         return panel;
     }
 

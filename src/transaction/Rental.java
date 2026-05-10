@@ -8,6 +8,11 @@ import strategy.PenaltyPolicy;
 
 public class Rental extends Transaction {
 
+    private boolean isResolved = false;
+
+    public boolean isResolved() { return isResolved; }
+    public void resolve() { isResolved = true; }
+
     public Rental(User owner, User borrower, Item item) {
         super(owner, borrower, item);
     }
