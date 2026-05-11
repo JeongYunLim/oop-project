@@ -1,14 +1,16 @@
 package ui;
 
-
 import domain.Item;
 import manager.ItemManager;
 import manager.NavigationManager;
 import transaction.Rental;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MainFrame extends JFrame {
+
+    private final Color BACKGROUND_COLOR = new Color(245, 247, 250);
 
     private CardLayout cardLayout = new CardLayout();
     private JPanel mainContainer = new JPanel(cardLayout);
@@ -24,44 +26,60 @@ public class MainFrame extends JFrame {
     private InquiryPanel inquiryPanel;
 
     public MainFrame() {
-        setTitle("CampusShare");
-        setSize(900, 650);
+        setTitle("CampusShare - 광운대학교 유휴자원 공유 플랫폼");
+        setSize(1000, 700);
+        setMinimumSize(new Dimension(900, 650));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        getContentPane().setBackground(BACKGROUND_COLOR);
+
+        mainContainer.setBackground(BACKGROUND_COLOR);
+        mainContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
         NavigationManager.getInstance().setMainFrame(this);
 
-        mainPanel        = new MainPanel();
-        loginPanel       = new LoginPanel();
-        signupPanel      = new SignupPanel();
-        myPagePanel      = new MyPagePanel();
-        itemListPanel    = new ItemListPanel(ItemManager.getInstance());
+        mainPanel = new MainPanel();
+        loginPanel = new LoginPanel();
+        signupPanel = new SignupPanel();
+        myPagePanel = new MyPagePanel();
+        itemListPanel = new ItemListPanel(ItemManager.getInstance());
         itemRegisterPanel = new ItemRegisterPanel(ItemManager.getInstance());
-        itemDetailPanel  = new ItemDetailPanel();
-        adminPanel       = new AdminPanel();
-        inquiryPanel     = new InquiryPanel();
+        itemDetailPanel = new ItemDetailPanel();
+        adminPanel = new AdminPanel();
+        inquiryPanel = new InquiryPanel();
 
         itemListPanel.setDetailPanel(itemDetailPanel);
         myPagePanel.setDetailPanel(itemDetailPanel);
 
-        mainContainer.add(mainPanel,         "MAIN");
-        mainContainer.add(loginPanel,        "LOGIN");
-        mainContainer.add(signupPanel,       "SIGNUP");
-        mainContainer.add(myPagePanel,       "MYPAGE");
-        mainContainer.add(itemListPanel,     "ITEM_LIST");
+        mainContainer.add(mainPanel, "MAIN");
+        mainContainer.add(loginPanel, "LOGIN");
+        mainContainer.add(signupPanel, "SIGNUP");
+        mainContainer.add(myPagePanel, "MYPAGE");
+        mainContainer.add(itemListPanel, "ITEM_LIST");
         mainContainer.add(itemRegisterPanel, "ITEM_REGISTER");
-        mainContainer.add(itemDetailPanel,   "ITEM_DETAIL");
-        mainContainer.add(adminPanel,        "ADMIN");
-        mainContainer.add(inquiryPanel,      "INQUIRY");
+        mainContainer.add(itemDetailPanel, "ITEM_DETAIL");
+        mainContainer.add(adminPanel, "ADMIN");
+        mainContainer.add(inquiryPanel, "INQUIRY");
 
-        add(mainContainer);
+        add(mainContainer, BorderLayout.CENTER);
+
         showCard("MAIN");
+        setVisible(true);
     }
 
     public void showCard(String name) {
-        if ("MYPAGE".equals(name))     myPagePanel.refresh();
-        if ("MAIN".equals(name))       mainPanel.refresh();
-        if ("ITEM_LIST".equals(name))  itemListPanel.loadAllItems();
+        if ("MYPAGE".equals(name)) {
+            myPagePanel.refresh();
+        }
+
+        if ("MAIN".equals(name)) {
+            mainPanel.refresh();
+        }
+
+        if ("ITEM_LIST".equals(name)) {
+            itemListPanel.loadAllItems();
+        }
 
         cardLayout.show(mainContainer, name);
         mainContainer.revalidate();
@@ -69,8 +87,9 @@ public class MainFrame extends JFrame {
     }
 
     public void showTransactionPanel(Rental rental) {
-        TransactionPanel tp = new TransactionPanel(rental);
-        mainContainer.add(tp, "TRANSACTION");
+        TransactionPanel transactionPanel = new TransactionPanel(rental);
+
+        mainContainer.add(transactionPanel, "TRANSACTION");
         showCard("TRANSACTION");
     }
 
