@@ -64,7 +64,8 @@ public class MainFrame extends JFrame {
 
         add(mainContainer, BorderLayout.CENTER);
 
-        showCard("MAIN");
+        // 첫 화면을 MAIN이 아니라 LOGIN으로 시작
+        showCard("LOGIN");
         setVisible(true);
     }
 

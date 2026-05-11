@@ -65,7 +65,7 @@ public class MainPanel extends JPanel {
         titlePanel.add(Box.createVerticalStrut(18));
         titlePanel.add(userInfoLabel);
 
-        JPanel buttonPanel = new JPanel(new GridLayout(4, 2, 14, 14));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 14));
         buttonPanel.setBackground(CARD_COLOR);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
@@ -115,7 +115,7 @@ public class MainPanel extends JPanel {
 
         logoutBtn.addActionListener(e -> {
             UserManager.getInstance().logout();
-            refresh();
+            NavigationManager.getInstance().showPanel("LOGIN");
             JOptionPane.showMessageDialog(this, "로그아웃되었습니다.");
         });
 
@@ -126,7 +126,6 @@ public class MainPanel extends JPanel {
         buttonPanel.add(mypageBtn);
         buttonPanel.add(adminBtn);
         buttonPanel.add(logoutBtn);
-        buttonPanel.add(new JLabel());
 
         card.add(titlePanel, BorderLayout.NORTH);
         card.add(buttonPanel, BorderLayout.CENTER);
@@ -179,6 +178,9 @@ public class MainPanel extends JPanel {
             adminBtn.setVisible(false);
             logoutBtn.setVisible(true);
         }
+
+        revalidate();
+        repaint();
     }
 
     private JButton createMainButton(String text) {
