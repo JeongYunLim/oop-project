@@ -24,10 +24,22 @@ public class UserManager {
     // 회원가입, 로그인, 로그아웃 기능 구현
 
 
-    // 회원가입: 아이디 중복 체크 후 새 사용자 추가
+    // 회원가입: 아이디 중복 체크 후 새 사용자 추가 (전화번호 포함)
+    public boolean signup(String id, String password, String name, String phoneNumber) {
+        for (User u : users) {
+            if (u.getId().equals(id)) return false;
+        }
+        User newUser = new User(id, password, name);
+        newUser.setPhoneNumber(phoneNumber);
+        newUser.setPhoneVerified(true);
+        users.add(newUser);
+        return true;
+    }
+
+    // 기존 호환용 (전화번호 없이 가입, 테스트 계정 등)
     public boolean signup(String id, String password, String name) {
         for (User u : users) {
-            if (u.getId().equals(id)) return false; // 중복 체크
+            if (u.getId().equals(id)) return false;
         }
         users.add(new User(id, password, name));
         return true;

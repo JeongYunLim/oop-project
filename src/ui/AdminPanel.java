@@ -65,6 +65,8 @@ public class AdminPanel extends JPanel {
             info.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             info.add(new JLabel("신고 유형: " + rental.getPendingPolicy().getPenaltyName()));
             info.add(new JLabel("처리 여부: " + (rental.isResolved() ? "처리됨" : "미처리")));
+            String borrowerPhone = rental.getBorrower().getPhoneNumber();
+            info.add(new JLabel("대여자 전화번호: " + (borrowerPhone.isEmpty() ? "(없음)" : borrowerPhone)));
 
             String detail = rental.getReportDetail();
             JTextArea detailArea = new JTextArea(detail.isEmpty() ? "내용 없음" : detail);
@@ -121,7 +123,7 @@ public class AdminPanel extends JPanel {
 
     private JPanel buildUserTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        String[] cols = {"아이디", "이름", "매너온도", "정지 여부"};
+        String[] cols = {"아이디", "이름", "전화번호", "인증 여부", "매너온도", "정지 여부"};
         userTableModel = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -140,7 +142,7 @@ public class AdminPanel extends JPanel {
             if (Admin.isAdmin(user)) { JOptionPane.showMessageDialog(panel, "관리자는 정지 불가합니다."); return; }
             if (user.isBanned())     { JOptionPane.showMessageDialog(panel, "이미 정지된 계정입니다."); return; }
             user.setBanned(true);
-            userTableModel.setValueAt("정지", row, 3);
+            userTableModel.setValueAt("정지", row, 5);
         });
 
         unbanBtn.addActionListener(e -> {
@@ -149,7 +151,7 @@ public class AdminPanel extends JPanel {
             User user = userList.get(row);
             if (!user.isBanned()) { JOptionPane.showMessageDialog(panel, "정지된 계정이 아닙니다."); return; }
             user.setBanned(false);
-            userTableModel.setValueAt("정상", row, 3);
+            userTableModel.setValueAt("정상", row, 5);
         });
 
         refreshBtn.addActionListener(e -> loadUserTable());
@@ -168,9 +170,12 @@ public class AdminPanel extends JPanel {
         userList = UserManager.getInstance().getAllUsers();
         userTableModel.setRowCount(0);
         for (User u : userList) {
+            String phone = u.getPhoneNumber();
             userTableModel.addRow(new Object[]{
                 u.getId(),
                 u.getName(),
+                phone.isEmpty() ? "(없음)" : phone,
+                u.isPhoneVerified() ? "인증" : "미인증",
                 String.format("%.1f", u.getTemperature().getValue()),
                 u.isBanned() ? "정지" : "정상"
             });
