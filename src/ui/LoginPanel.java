@@ -35,12 +35,11 @@ public class LoginPanel extends JPanel {
         subTitleLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         subTitleLabel.setForeground(new Color(110, 110, 110));
 
-        JTextField idField = createTextField("아이디를 입력하세요");
-        JPasswordField pwField = createPasswordField("비밀번호를 입력하세요");
+        JTextField idField = createTextField();
+        JPasswordField pwField = createPasswordField();
 
         JButton loginBtn = createMainButton("로그인");
         JButton toSignupBtn = createSubButton("회원가입");
-        JButton backBtn = createTextButton("메인으로 돌아가기");
 
         JLabel idLabel = createLabel("아이디");
         JLabel pwLabel = createLabel("비밀번호");
@@ -63,8 +62,6 @@ public class LoginPanel extends JPanel {
         card.add(loginBtn);
         card.add(Box.createVerticalStrut(10));
         card.add(toSignupBtn);
-        card.add(Box.createVerticalStrut(18));
-        card.add(backBtn);
 
         add(card);
 
@@ -86,10 +83,6 @@ public class LoginPanel extends JPanel {
         toSignupBtn.addActionListener(e ->
                 NavigationManager.getInstance().showPanel("SIGNUP")
         );
-
-        backBtn.addActionListener(e ->
-                NavigationManager.getInstance().showPanel("MAIN")
-        );
     }
 
     private JLabel createLabel(String text) {
@@ -102,7 +95,7 @@ public class LoginPanel extends JPanel {
         return label;
     }
 
-    private JTextField createTextField(String placeholder) {
+    private JTextField createTextField() {
         JTextField field = new JTextField();
         field.setAlignmentX(Component.CENTER_ALIGNMENT);
         field.setMaximumSize(new Dimension(320, 42));
@@ -114,11 +107,10 @@ public class LoginPanel extends JPanel {
                 BorderFactory.createLineBorder(new Color(210, 215, 225), 1),
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)
         ));
-        field.setToolTipText(placeholder);
         return field;
     }
 
-    private JPasswordField createPasswordField(String placeholder) {
+    private JPasswordField createPasswordField() {
         JPasswordField field = new JPasswordField();
         field.setAlignmentX(Component.CENTER_ALIGNMENT);
         field.setMaximumSize(new Dimension(320, 42));
@@ -130,7 +122,6 @@ public class LoginPanel extends JPanel {
                 BorderFactory.createLineBorder(new Color(210, 215, 225), 1),
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)
         ));
-        field.setToolTipText(placeholder);
         return field;
     }
 
@@ -169,18 +160,6 @@ public class LoginPanel extends JPanel {
         button.setBackground(new Color(235, 242, 255));
         button.setFocusPainted(false);
         button.setBorderPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return button;
-    }
-
-    private JButton createTextButton(String text) {
-        JButton button = new JButton(text);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
-        button.setForeground(new Color(120, 120, 120));
-        button.setBackground(Color.WHITE);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
