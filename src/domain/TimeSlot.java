@@ -53,27 +53,6 @@ public class TimeSlot {
 
 
     // ════════════════════════════════════════════════
-    //  구간 확인 메서드
-    // ════════════════════════════════════════════════
-
-    /** 현재 시각이 대여 가능 구간(시작 이상 ~ 종료 이하)인지 확인 */
-    public boolean isAvailableNow() {
-        LocalDateTime now = LocalDateTime.now();
-        return !now.isBefore(startTime) && !now.isAfter(endTime);
-    }
-
-    /**
-     * 두 TimeSlot이 겹치는지 확인 — ItemManager의 중복 예약 방지에 사용
-     * 끝과 시작이 딱 맞닿는 경우(연속 예약)는 겹치지 않는 것으로 처리
-     */
-    public boolean overlaps(TimeSlot other) {
-        if (other == null) return false;
-        return this.startTime.isBefore(other.endTime)
-            && other.startTime.isBefore(this.endTime);
-    }
-
-
-    // ════════════════════════════════════════════════
     //  Getter / Setter
     // ════════════════════════════════════════════════
 

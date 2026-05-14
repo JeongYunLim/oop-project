@@ -2,10 +2,14 @@ package strategy;
 
 import domain.User;
 
-public class NoReturnPenalty implements PenaltyPolicy {
+public class NoReturnPenalty extends PenaltyPolicy {
 
     @Override
     public void apply(User user) {
+        if (user == null || user.getTemperature() == null) {
+            return;
+        }
+
         user.getTemperature().decrease(3.0);
     }
 

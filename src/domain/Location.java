@@ -48,7 +48,7 @@ public class Location {
 
 
     // ════════════════════════════════════════════════
-    //  Getter / Setter
+    //  Getter
     // ════════════════════════════════════════════════
 
     public String getBuilding()    { return building; }
