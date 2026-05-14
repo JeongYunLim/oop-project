@@ -1,74 +1,224 @@
-package transaction;
+ package transaction;
 
 import domain.Item;
 import domain.User;
 import manager.RentalManager;
 import manager.ReportManager;
+import state.AvailableState;
+import state.ReservedState;
+import state.RentedState;
 import strategy.PenaltyPolicy;
-import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
 
 public class Rental extends Transaction {
 
-    private boolean isResolved = false;
-    private LocalDateTime startedAt = null;
-    private PenaltyPolicy pendingPolicy = null;
+    private User owner;
+    private User borrower;
+    private Item item;
+
+    private RentalStatus status;
+    private LocalDateTime requestedAt;
+    private LocalDateTime approvedAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime returnedAt;
+
+    private PenaltyPolicy pendingPolicy;
     private String reportDetail = "";
+    private boolean resolved = false;
 
-    public LocalDateTime getStartedAt() { return startedAt; }
-    public boolean isResolved() { return isResolved; }
-    public PenaltyPolicy getPendingPolicy() { return pendingPolicy; }
-    public String getReportDetail() { return reportDetail; }
-
-    public void resolve() {
-        if (pendingPolicy != null) pendingPolicy.apply(borrower);
-        isResolved = true;
-    }
+    private boolean registered = false;
 
     public Rental(User owner, User borrower, Item item) {
         super(owner, borrower, item);
+
+        this.owner = owner;
+        this.borrower = borrower;
+        this.item = item;
+        this.status = RentalStatus.REQUESTED;
+        this.requestedAt = LocalDateTime.now();
     }
 
     @Override
     public void request() {
-        item.requestRental();
+        if (item == null) {
+            return;
+        }
+
+        if (!item.isAvailable()) {
+            return;
+        }
+
         status = RentalStatus.REQUESTED;
-        RentalManager.getInstance().addRental(this);
+        requestedAt = LocalDateTime.now();
+
+        item.setState(new ReservedState());
+
+        if (!registered) {
+            RentalManager.getInstance().addRental(this);
+            registered = true;
+        }
     }
 
     @Override
     public void approve() {
         if (status != RentalStatus.REQUESTED) {
-            System.out.println("대여 요청 상태에서만 승인 가능합니다.");
             return;
         }
+
         status = RentalStatus.APPROVED;
+        approvedAt = LocalDateTime.now();
     }
 
     @Override
     public void start() {
         if (status != RentalStatus.APPROVED) {
-            System.out.println("승인된 상태에서만 대여 시작이 가능합니다.");
             return;
         }
-        item.startRental();
+
         status = RentalStatus.RENTING;
         startedAt = LocalDateTime.now();
+
+        item.setState(new RentedState());
     }
 
     @Override
     public void completeReturn() {
-        item.returnItem();
+        if (status != RentalStatus.RENTING) {
+            return;
+        }
+
         status = RentalStatus.COMPLETED;
-        borrower.getTemperature().increase(0.3);
-        owner.getTemperature().increase(0.2);
+        returnedAt = LocalDateTime.now();
+
+        item.setState(new AvailableState());
+
+        if (borrower != null && borrower.getTemperature() != null) {
+            borrower.getTemperature().increase(0.3);
+        }
+
+        if (owner != null && owner.getTemperature() != null) {
+            owner.getTemperature().increase(0.3);
+        }
+    }
+
+    public boolean cancelRequest(User user) {
+        if (user == null) {
+            return false;
+        }
+
+        if (borrower == null) {
+            return false;
+        }
+
+        if (!user.getId().equals(borrower.getId())) {
+            return false;
+        }
+
+        if (status != RentalStatus.REQUESTED) {
+            return false;
+        }
+
+        status = RentalStatus.CANCELLED;
+
+        if (item != null) {
+            item.setState(new AvailableState());
+        }
+
+        return true;
     }
 
     public void reportProblem(PenaltyPolicy policy, String detail) {
-        item.returnItem();
-        pendingPolicy = policy;
-        reportDetail = detail != null ? detail : "";
-        status = RentalStatus.REPORTED;
+        if (policy == null) {
+            return;
+        }
+
+        this.pendingPolicy = policy;
+        this.reportDetail = detail == null ? "" : detail;
+        this.resolved = false;
+
+        // 신고 완료 시 거래 상태를 문제 신고 상태로 변경
+        this.status = RentalStatus.REPORTED;
+
+        // 신고 완료 시 대여 중이던 물품을 다시 반납 처리
+        this.returnedAt = LocalDateTime.now();
+
+        if (item != null) {
+            item.setState(new AvailableState());
+        }
+
+        // 문제 발생 시 대여자에게 패널티 적용
+        if (borrower != null) {
+            policy.apply(borrower);
+        }
+
         ReportManager.getInstance().addReport(this);
+    }
+
+    public void resolve() {
+        this.resolved = true;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public User getBorrower() {
+        return borrower;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public RentalStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getRequestedAt() {
+        return requestedAt;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public LocalDateTime getStartedAt() {
+        return startedAt;
+    }
+
+    public LocalDateTime getReturnedAt() {
+        return returnedAt;
+    }
+
+    public PenaltyPolicy getPendingPolicy() {
+        return pendingPolicy;
+    }
+
+    public String getReportDetail() {
+        return reportDetail;
+    }
+
+    public boolean isResolved() {
+        return resolved;
+    }
+
+    public String getStatusText() {
+        switch (status) {
+            case REQUESTED:
+                return "대여 요청됨";
+            case APPROVED:
+                return "대여 승인됨";
+            case RENTING:
+                return "대여 중";
+            case COMPLETED:
+                return "거래 완료";
+            case REPORTED:
+                return "문제 신고됨";
+            case CANCELLED:
+                return "대여 요청 취소됨";
+            default:
+                return "알 수 없음";
+        }
     }
 }

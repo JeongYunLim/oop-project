@@ -13,6 +13,9 @@ public class LoginPanel extends JPanel {
     private final Color MAIN_DARK_COLOR = new Color(35, 90, 200);
     private final Color TEXT_COLOR = new Color(40, 40, 40);
 
+    private JTextField idField;
+    private JPasswordField pwField;
+
     public LoginPanel() {
         setLayout(new GridBagLayout());
         setBackground(BACKGROUND_COLOR);
@@ -35,8 +38,8 @@ public class LoginPanel extends JPanel {
         subTitleLabel.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
         subTitleLabel.setForeground(new Color(110, 110, 110));
 
-        JTextField idField = createTextField();
-        JPasswordField pwField = createPasswordField();
+        idField = createTextField();
+        pwField = createPasswordField();
 
         JButton loginBtn = createMainButton("로그인");
         JButton toSignupBtn = createSubButton("회원가입");
@@ -66,10 +69,11 @@ public class LoginPanel extends JPanel {
         add(card);
 
         loginBtn.addActionListener(e -> {
-            String id = idField.getText();
+            String id = idField.getText().trim();
             String pw = new String(pwField.getPassword());
 
             if (UserManager.getInstance().login(id, pw)) {
+                clearFields();
                 NavigationManager.getInstance().showPanel("MAIN");
 
                 SwingUtilities.invokeLater(() ->
@@ -80,9 +84,20 @@ public class LoginPanel extends JPanel {
             }
         });
 
-        toSignupBtn.addActionListener(e ->
-                NavigationManager.getInstance().showPanel("SIGNUP")
-        );
+        toSignupBtn.addActionListener(e -> {
+            clearFields();
+            NavigationManager.getInstance().showPanel("SIGNUP");
+        });
+    }
+
+    public void clearFields() {
+        if (idField != null) {
+            idField.setText("");
+        }
+
+        if (pwField != null) {
+            pwField.setText("");
+        }
     }
 
     private JLabel createLabel(String text) {

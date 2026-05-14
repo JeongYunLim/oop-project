@@ -1,4 +1,4 @@
-package ui;
+ package ui;
 
 import domain.Item;
 import manager.ItemManager;
@@ -64,12 +64,15 @@ public class MainFrame extends JFrame {
 
         add(mainContainer, BorderLayout.CENTER);
 
-        // 첫 화면을 MAIN이 아니라 LOGIN으로 시작
         showCard("LOGIN");
         setVisible(true);
     }
 
     public void showCard(String name) {
+        if ("LOGIN".equals(name)) {
+            loginPanel.clearFields();
+        }
+
         if ("MYPAGE".equals(name)) {
             myPagePanel.refresh();
         }
@@ -79,7 +82,7 @@ public class MainFrame extends JFrame {
         }
 
         if ("ITEM_LIST".equals(name)) {
-            itemListPanel.loadAllItems();
+            itemListPanel.prepareForDisplay();
         }
 
         cardLayout.show(mainContainer, name);

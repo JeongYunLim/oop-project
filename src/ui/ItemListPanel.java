@@ -2,13 +2,18 @@
 
 import manager.ItemManager;
 import manager.NavigationManager;
+import manager.UserManager;
 import domain.Item;
+import domain.User;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ItemListPanel extends JPanel {
 
@@ -35,15 +40,28 @@ public class ItemListPanel extends JPanel {
     private DefaultTableModel tableModel;
     private ArrayList<Item> currentItems = new ArrayList<>();
 
+    private boolean isRestoringSearchState = false;
+    private String lastDisplayedUserKey = null;
+
+    private Map<String, SearchState> searchHistoryByUser = new HashMap<>();
+
     private static final DateTimeFormatter SLOT_DATE_FMT =
             DateTimeFormatter.ofPattern("MM/dd HH:mm");
     private static final DateTimeFormatter SLOT_TIME_FMT =
             DateTimeFormatter.ofPattern("HH:mm");
 
+    private static class SearchState {
+        String keyword = "";
+        String category = "전체";
+        String building = "전체";
+        boolean availableOnly = false;
+        String sortType = "NONE";
+    }
+
     public ItemListPanel(ItemManager itemManager) {
         this.itemManager = itemManager;
         initComponents();
-        loadAllItems();
+        prepareForDisplay();
     }
 
     public void setDetailPanel(ItemDetailPanel detailPanel) {
@@ -116,7 +134,7 @@ public class ItemListPanel extends JPanel {
         searchField = createTextField(15);
         searchButton = createMainButton("검색");
 
-        String[] categories = {"전체", "전자기기", "도서", "생활용품", "의류", "스포츠"};
+        String[] categories = {"전체", "전자기기", "도서", "생활용품", "의류", "스포츠", "기타"};
         categoryCombo = createComboBox(categories);
 
         searchRow.add(createSmallLabel("검색"));
@@ -161,13 +179,46 @@ public class ItemListPanel extends JPanel {
         top.add(Box.createVerticalStrut(6));
         top.add(filterRow);
 
-        searchButton.addActionListener(e -> onSearch());
-        searchField.addActionListener(e -> onSearch());
-        categoryCombo.addActionListener(e -> applyFilters());
-        buildingCombo.addActionListener(e -> applyFilters());
-        availableCheckBox.addActionListener(e -> applyFilters());
-        sortByPriceButton.addActionListener(e -> displayItems(itemManager.sortByPrice()));
-        sortByLatestButton.addActionListener(e -> displayItems(itemManager.sortByLatest()));
+        searchButton.addActionListener(e -> {
+            saveCurrentSearchState("NONE");
+            applySearchAndFilters();
+        });
+
+        searchField.addActionListener(e -> {
+            saveCurrentSearchState("NONE");
+            applySearchAndFilters();
+        });
+
+        categoryCombo.addActionListener(e -> {
+            if (!isRestoringSearchState) {
+                saveCurrentSearchState("NONE");
+                applySearchAndFilters();
+            }
+        });
+
+        buildingCombo.addActionListener(e -> {
+            if (!isRestoringSearchState) {
+                saveCurrentSearchState("NONE");
+                applySearchAndFilters();
+            }
+        });
+
+        availableCheckBox.addActionListener(e -> {
+            if (!isRestoringSearchState) {
+                saveCurrentSearchState("NONE");
+                applySearchAndFilters();
+            }
+        });
+
+        sortByPriceButton.addActionListener(e -> {
+            saveCurrentSearchState("PRICE");
+            applySearchAndFilters();
+        });
+
+        sortByLatestButton.addActionListener(e -> {
+            saveCurrentSearchState("LATEST");
+            applySearchAndFilters();
+        });
 
         return top;
     }
@@ -206,32 +257,125 @@ public class ItemListPanel extends JPanel {
         return scrollPane;
     }
 
-    private void onSearch() {
-        String keyword = searchField.getText().trim();
+    public void prepareForDisplay() {
+        String currentUserKey = getCurrentUserKey();
 
-        if (keyword.isEmpty()) {
-            loadAllItems();
-        } else {
-            displayItems(itemManager.searchByName(keyword));
+        if (lastDisplayedUserKey != null && !lastDisplayedUserKey.equals(currentUserKey)) {
+            saveCurrentSearchStateForUser(lastDisplayedUserKey);
         }
+
+        restoreSearchStateForUser(currentUserKey);
+        lastDisplayedUserKey = currentUserKey;
+
+        applySearchAndFilters();
     }
 
-    private void applyFilters() {
+    public void loadAllItems() {
+        prepareForDisplay();
+    }
+
+    private String getCurrentUserKey() {
+        User user = UserManager.getInstance().getLoggedInUser();
+
+        if (user == null) {
+            return "GUEST";
+        }
+
+        return user.getId();
+    }
+
+    private void saveCurrentSearchState(String sortType) {
+        if (isRestoringSearchState) {
+            return;
+        }
+
+        String userKey = getCurrentUserKey();
+        SearchState state = getSearchState(userKey);
+
+        state.keyword = searchField.getText().trim();
+        state.category = (String) categoryCombo.getSelectedItem();
+        state.building = (String) buildingCombo.getSelectedItem();
+        state.availableOnly = availableCheckBox.isSelected();
+        state.sortType = sortType;
+    }
+
+    private void saveCurrentSearchStateForUser(String userKey) {
+        if (searchField == null || categoryCombo == null || buildingCombo == null || availableCheckBox == null) {
+            return;
+        }
+
+        SearchState state = getSearchState(userKey);
+
+        state.keyword = searchField.getText().trim();
+        state.category = (String) categoryCombo.getSelectedItem();
+        state.building = (String) buildingCombo.getSelectedItem();
+        state.availableOnly = availableCheckBox.isSelected();
+    }
+
+    private SearchState getSearchState(String userKey) {
+        SearchState state = searchHistoryByUser.get(userKey);
+
+        if (state == null) {
+            state = new SearchState();
+            searchHistoryByUser.put(userKey, state);
+        }
+
+        return state;
+    }
+
+    private void restoreSearchStateForUser(String userKey) {
+        SearchState state = getSearchState(userKey);
+
+        isRestoringSearchState = true;
+
+        searchField.setText(state.keyword);
+        categoryCombo.setSelectedItem(state.category);
+        buildingCombo.setSelectedItem(state.building);
+        availableCheckBox.setSelected(state.availableOnly);
+
+        isRestoringSearchState = false;
+    }
+
+    private void applySearchAndFilters() {
+        String userKey = getCurrentUserKey();
+        SearchState state = getSearchState(userKey);
+
+        ArrayList<Item> result = new ArrayList<>(itemManager.getItems());
+
+        String keyword = searchField.getText().trim();
         String category = (String) categoryCombo.getSelectedItem();
         String building = (String) buildingCombo.getSelectedItem();
+        boolean availableOnly = availableCheckBox.isSelected();
 
-        ArrayList<Item> result = itemManager.getItems();
+        state.keyword = keyword;
+        state.category = category;
+        state.building = building;
+        state.availableOnly = availableOnly;
+
+        if (!keyword.isEmpty()) {
+            result.removeIf(item -> !item.getName().contains(keyword));
+        }
 
         if (!"전체".equals(category)) {
-            result = itemManager.filterByCategory(category);
+            result.removeIf(item -> !item.getCategory().equalsIgnoreCase(category));
         }
 
         if (!"전체".equals(building)) {
-            result.retainAll(itemManager.filterByBuilding(building));
+            result.removeIf(item ->
+                    item.getLocation() == null
+                            || item.getLocation().getBuilding() == null
+                            || !item.getLocation().getBuilding().equalsIgnoreCase(building)
+            );
         }
 
-        if (availableCheckBox.isSelected()) {
+        if (availableOnly) {
             result.removeIf(item -> !item.isAvailable());
+        }
+
+        if ("PRICE".equals(state.sortType)) {
+            result.sort(Comparator.comparingInt(Item::getPricePerHour));
+        } else if ("LATEST".equals(state.sortType)) {
+            result.sort(Comparator.comparing(Item::getRegisteredAt).reversed());
         }
 
         displayItems(result);
@@ -251,10 +395,6 @@ public class ItemListPanel extends JPanel {
         }
 
         NavigationManager.getInstance().showPanel("ITEM_DETAIL");
-    }
-
-    public void loadAllItems() {
-        displayItems(itemManager.getItems());
     }
 
     private void displayItems(ArrayList<Item> items) {

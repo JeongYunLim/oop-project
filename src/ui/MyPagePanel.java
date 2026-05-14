@@ -1,4 +1,4 @@
-package ui;
+ package ui;
 
 import domain.Inquiry;
 import domain.Item;
@@ -81,7 +81,7 @@ public class MyPagePanel extends JPanel {
 
         logoutBtn.addActionListener(e -> {
             UserManager.getInstance().logout();
-            NavigationManager.getInstance().showPanel("MAIN");
+            NavigationManager.getInstance().showPanel("LOGIN");
         });
 
         buttonPanel.add(backBtn);
@@ -268,6 +268,7 @@ public class MyPagePanel extends JPanel {
         countdownTimer.start();
 
         JButton startBtn = createMainButton("대여 시작");
+        JButton cancelBtn = createTextButton("요청 취소");
         JButton detailBtn = createSubButton("상세 정보");
 
         startBtn.addActionListener(e -> {
@@ -295,6 +296,42 @@ public class MyPagePanel extends JPanel {
             JOptionPane.showMessageDialog(panel, "대여가 시작되었습니다.");
         });
 
+        cancelBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+
+            if (row < 0) {
+                JOptionPane.showMessageDialog(panel, "취소할 대여 요청을 선택하세요.");
+                return;
+            }
+
+            Rental rental = borrowingRentalList.get(row);
+
+            if (rental.getStatus() != RentalStatus.REQUESTED) {
+                JOptionPane.showMessageDialog(panel, "승인 전 대여 요청만 취소할 수 있습니다.");
+                return;
+            }
+
+            User user = UserManager.getInstance().getLoggedInUser();
+
+            int result = JOptionPane.showConfirmDialog(
+                    panel,
+                    "대여 요청을 취소하시겠습니까?",
+                    "요청 취소 확인",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (result != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            if (rental.cancelRequest(user)) {
+                refresh();
+                JOptionPane.showMessageDialog(panel, "대여 요청이 취소되었습니다.");
+            } else {
+                JOptionPane.showMessageDialog(panel, "대여 요청을 취소할 수 없습니다.");
+            }
+        });
+
         detailBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
 
@@ -311,6 +348,7 @@ public class MyPagePanel extends JPanel {
 
         JPanel btnPanel = createButtonPanel();
         btnPanel.add(startBtn);
+        btnPanel.add(cancelBtn);
         btnPanel.add(detailBtn);
 
         panel.add(new JScrollPane(table), BorderLayout.CENTER);

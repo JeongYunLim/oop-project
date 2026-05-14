@@ -27,7 +27,7 @@ public class ReportPanel extends JPanel {
         JPanel card = new JPanel();
         card.setLayout(new BorderLayout(15, 18));
         card.setBackground(CARD_COLOR);
-        card.setPreferredSize(new Dimension(420, 360));
+        card.setPreferredSize(new Dimension(440, 430));
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(225, 225, 225), 1),
                 BorderFactory.createEmptyBorder(28, 32, 28, 32)
@@ -69,17 +69,28 @@ public class ReportPanel extends JPanel {
         group.add(damageButton);
         group.add(noReturnButton);
 
-        JTextArea reportDetailArea = new JTextArea(4, 20);
-        reportDetailArea.setFont(new Font("맑은 고딕", Font.PLAIN, 13));
+        JLabel detailLabel = new JLabel("신고 내용");
+        detailLabel.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+        detailLabel.setForeground(TEXT_COLOR);
+        detailLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JTextArea reportDetailArea = new JTextArea();
+        reportDetailArea.setFont(new Font("맑은 고딕", Font.PLAIN, 14));
+        reportDetailArea.setForeground(TEXT_COLOR);
+        reportDetailArea.setCaretColor(TEXT_COLOR);
+        reportDetailArea.setBackground(Color.WHITE);
         reportDetailArea.setLineWrap(true);
         reportDetailArea.setWrapStyleWord(true);
-        reportDetailArea.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        reportDetailArea.setBackground(new Color(250, 250, 250));
+        reportDetailArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        reportDetailArea.setText("");
 
         JScrollPane detailScroll = new JScrollPane(reportDetailArea);
-        detailScroll.setBorder(BorderFactory.createTitledBorder("신고 내용 (선택)"));
         detailScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
-        detailScroll.setMaximumSize(new Dimension(360, 95));
+        detailScroll.setPreferredSize(new Dimension(360, 120));
+        detailScroll.setMaximumSize(new Dimension(360, 120));
+        detailScroll.setMinimumSize(new Dimension(360, 120));
+        detailScroll.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 225), 1));
+        detailScroll.getViewport().setBackground(Color.WHITE);
 
         centerPanel.add(infoLabel);
         centerPanel.add(Box.createVerticalStrut(10));
@@ -88,7 +99,9 @@ public class ReportPanel extends JPanel {
         centerPanel.add(damageButton);
         centerPanel.add(Box.createVerticalStrut(4));
         centerPanel.add(noReturnButton);
-        centerPanel.add(Box.createVerticalStrut(14));
+        centerPanel.add(Box.createVerticalStrut(18));
+        centerPanel.add(detailLabel);
+        centerPanel.add(Box.createVerticalStrut(8));
         centerPanel.add(detailScroll);
 
         JButton applyButton = createMainButton("신고 완료");
