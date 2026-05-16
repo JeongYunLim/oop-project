@@ -11,28 +11,17 @@ package domain;
 public class Location {
 
     // ── 위치 정보 ────────────────────────────────────
-    private String building;    // 건물명 (예: "새빛관", "비마관")
-    private String detail;      // 세부 장소 (예: "3층 312호", "1층 로비")
-    private String description; // 추가 설명 (예: "엘리베이터 옆", "정문에서 도보 3분")
+    private String building; // 건물명 (예: "새빛관", "비마관")
+    private String detail;   // 세부 장소 (예: "3층 312호", "1층 로비")
 
-   
 
     // ════════════════════════════════════════════════
     //  생성자
     // ════════════════════════════════════════════════
 
-    /** 설명 없는 버전 */
     public Location(String building, String detail) {
-        this.building    = building;
-        this.detail      = detail;
-        this.description = "";
-    }
-
-    /** 설명 있는 버전 */
-    public Location(String building, String detail, String description) {
-        this.building    = building;
-        this.detail      = detail;
-        this.description = description;
+        this.building = building;
+        this.detail   = detail;
     }
 
 
@@ -51,21 +40,16 @@ public class Location {
     //  Getter
     // ════════════════════════════════════════════════
 
-    public String getBuilding()    { return building; }
-    public String getDetail()      { return detail; }
-    public String getDescription() { return description; }
-
+    public String getBuilding() { return building; }
+    public String getDetail()   { return detail; }
 
 
     // ════════════════════════════════════════════════
-    //  toString — 위치 전체 문자열 출렬 / 디버깅용
+    //  toString — 위치 전체 문자열 출력 / 디버깅용
     // ════════════════════════════════════════════════
 
     @Override
     public String toString() {
-        if (description == null || description.isEmpty()) {
-            return building + " " + detail;
-        }
-        return building + " " + detail + " (" + description + ")";
+        return building + " " + detail;
     }
 }
