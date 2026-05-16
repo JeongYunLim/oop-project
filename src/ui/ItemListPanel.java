@@ -11,7 +11,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -340,8 +339,6 @@ public class ItemListPanel extends JPanel {
         String userKey = getCurrentUserKey();
         SearchState state = getSearchState(userKey);
 
-        ArrayList<Item> result = new ArrayList<>(itemManager.getItems());
-
         String keyword = searchField.getText().trim();
         String category = (String) categoryCombo.getSelectedItem();
         String building = (String) buildingCombo.getSelectedItem();
@@ -352,31 +349,7 @@ public class ItemListPanel extends JPanel {
         state.building = building;
         state.availableOnly = availableOnly;
 
-        if (!keyword.isEmpty()) {
-            result.removeIf(item -> !item.getName().contains(keyword));
-        }
-
-        if (!"전체".equals(category)) {
-            result.removeIf(item -> !item.getCategory().equalsIgnoreCase(category));
-        }
-
-        if (!"전체".equals(building)) {
-            result.removeIf(item ->
-                    item.getLocation() == null
-                            || item.getLocation().getBuilding() == null
-                            || !item.getLocation().getBuilding().equalsIgnoreCase(building)
-            );
-        }
-
-        if (availableOnly) {
-            result.removeIf(item -> !item.isAvailable());
-        }
-
-        if ("PRICE".equals(state.sortType)) {
-            result.sort(Comparator.comparingInt(Item::getPricePerHour));
-        } else if ("LATEST".equals(state.sortType)) {
-            result.sort(Comparator.comparing(Item::getRegisteredAt).reversed());
-        }
+        ArrayList<Item> result = itemManager.filter(keyword, category, building, availableOnly, state.sortType);
 
         displayItems(result);
     }
