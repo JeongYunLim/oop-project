@@ -75,13 +75,8 @@ public class Rental extends Transaction {
         // 물품 상태 변경은 Item에게 맡김
         item.returnItem();
 
-        if (borrower != null && borrower.getTemperature() != null) {
-            borrower.getTemperature().increase(0.3);
-        }
-
-        if (owner != null && owner.getTemperature() != null) {
-            owner.getTemperature().increase(0.3);
-        }
+        borrower.getTemperature().increase(0.3);
+        owner.getTemperature().increase(0.3);
     }
 
     public boolean cancelRequest(User user) {
