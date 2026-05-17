@@ -20,11 +20,13 @@ public class User {
     public String getPassword() { return password; }
     public String getName() { return name; }
     public Temperature getTemperature() { return temperature; }
-    public boolean isBanned() { return isBanned; }
-    public void setBanned(boolean banned) { this.isBanned = banned; }
-
     public String getPhoneNumber() { return phoneNumber; }
-    public boolean isPhoneVerified() { return phoneVerified; }
+   
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber != null ? phoneNumber : ""; }
     public void setPhoneVerified(boolean phoneVerified) { this.phoneVerified = phoneVerified; }
+    public void setBanned(boolean banned) { this.isBanned = banned; }
+    
+    public boolean isBanned() { return isBanned; }
+    public boolean isPhoneVerified() { return phoneVerified; }
+    
 }
