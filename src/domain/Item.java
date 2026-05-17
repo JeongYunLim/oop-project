@@ -36,21 +36,17 @@ public class Item {
     public void requestRental() { state.requestRental(this); }
     public void startRental()   { state.startRental(this); }
     public void returnItem()    { state.returnItem(this); }
-
-    public void setState(ItemState state)   { this.state = state; }
-    public String getStateName()            { return state.getStateName(); }
+    
 
     public boolean isAvailable() { return this.state instanceof AvailableState; }
     public boolean isReserved()  { return this.state instanceof ReservedState; }
     public boolean isRented()    { return this.state instanceof RentedState; }
 
     public void setItemId(int itemId)                      { this.itemId = itemId; }
-    public void setName(String name)                       { this.name = name; }
     public void setDescription(String description)         { this.description = description; }
-    public void setPricePerHour(int pricePerHour)          { this.pricePerHour = pricePerHour; }
-    public void setLocation(Location location)             { this.location = location; }
-    public void setTimeSlot(TimeSlot timeSlot)             { this.timeSlot = timeSlot; }
+    public void setState(ItemState state)   { this.state = state; }
 
+    public String getStateName()            { return state.getStateName(); }
     public int getItemId()                   { return itemId; }
     public String getName()                  { return name; }
     public String getCategory()              { return category; }
@@ -62,6 +58,7 @@ public class Item {
     public String getOwnerId()               { return owner != null ? owner.getId() : ""; }
     public LocalDateTime getRegisteredAt()   { return registeredAt; }
 
+    @Override
     public String toString() {
         return String.format(
             "[%d] %s | %s | %d원/시간 | 상태: %s",
